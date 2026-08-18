@@ -458,6 +458,8 @@ Depois delega os builds aos workflows reutilizáveis de Windows e AppImage, que
 publicam artefatos `x86_64` e `arm64`. A pré-release e a tag não numérica evitam
 que esse canal de desenvolvimento seja interpretado como uma versão estável.
 Execuções anteriores do mesmo grupo são canceladas quando chega um commit novo.
+O `BuildInfo.py` gerado inclui `GITHUB_SHA`, garantindo conteúdo e digest
+distintos mesmo quando a versão numérica e o nome do asset permanecem iguais.
 
 ## Mapa do repositório
 

@@ -22,12 +22,20 @@ GET_DEPENDENCIES_SCRIPT = (
 APPIMAGE_WORKFLOW = (
     REPOSITORY_ROOT / ".github" / "workflows" / "build-appimage.yml"
 )
+BUILD_INFO_SCRIPT = (
+    REPOSITORY_ROOT / ".github" / "packaging" / "common" / "build-info.sh"
+)
 NORMALIZE_SCRIPT = (
     REPOSITORY_ROOT / ".github" / "packaging" / "appimage" / "normalize.sh"
 )
 
 
 class AppImagePackagingTest(unittest.TestCase):
+    def test_build_info_embeds_commit_for_continuous_update_detection(self):
+        script = BUILD_INFO_SCRIPT.read_text(encoding="utf-8")
+
+        self.assertIn('BUILD_COMMIT = "${GITHUB_SHA:-unknown}"', script)
+
     def test_ffmpeg_uses_the_same_repository_transaction_as_qt_webengine(self):
         script = GET_DEPENDENCIES_SCRIPT.read_text(encoding="utf-8")
 

@@ -25,6 +25,8 @@ releases and the AppStream metadata.
 
 - Adopted versioned development cycles so new work identifies itself with the
   next numeric version while release builds retain the version being published.
+- Embedded the source commit in generated build metadata so consecutive
+  continuous AppImages have distinct, verifiable contents for update checks.
 
 ### Removed
 
