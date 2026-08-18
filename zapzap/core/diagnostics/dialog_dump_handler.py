@@ -10,7 +10,7 @@ from zapzap.features.alerts.alert_manager import AlertManager
 
 class DialogDumpHandler:
 
-    ISSUE_URL = "https://github.com/rafatosta/zapzap/issues"
+    ISSUE_URL = "https://github.com/matheusgodoy8/zapzap/issues"
     SUPPORT_EMAIL = "rafa.ecomp@gmail.com"
 
     @staticmethod

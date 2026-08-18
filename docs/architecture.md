@@ -422,7 +422,7 @@ persistência somente após `Aplicar`, e tanto o navegador quanto a página
 
 `core.update_checker` mantém separadas três responsabilidades: comparação de
 versões numéricas, política de ambiente e parsing da fonte remota. A fonte atual
-é `https://api.github.com/repos/rafatosta/zapzap/releases/latest`; drafts,
+é `https://api.github.com/repos/matheusgodoy8/zapzap/releases/latest`; drafts,
 prereleases e tags não numéricas são rejeitados mesmo que a resposta remota
 mude. A chamada usa `QNetworkAccessManager`, timeout de cinco segundos, nenhum
 retry e nenhum identificador de instalação.
@@ -430,7 +430,7 @@ retry e nenhum identificador de instalação.
 `UpdateInfo` também transporta a data de publicação, a URL de notas e, quando
 aplicável, o asset exato da plataforma. A URL é
 aceita somente quando usa HTTPS no caminho de releases de
-`github.com/rafatosta/zapzap`; assets só são aceitos no caminho oficial de
+`github.com/matheusgodoy8/zapzap`; assets só são aceitos no caminho oficial de
 download, com nome exato para versão/arquitetura, tamanho limitado e digest
 SHA-256 publicado pela API. Metadados opcionais inválidos são omitidos sem
 descartar uma versão estável válida. `ui.components.UpdateAvailablePopover`
@@ -441,7 +441,7 @@ No hover, o painel usa uma janela `Qt.Tool` mostrada sem ativação; não use
 e faz o painel piscar.
 
 A política exige simultaneamente canal `Official`, provedor `GitHub Actions`,
-repositório `rafatosta/zapzap` e um destes valores reais de `BUILD_PACKAGING`:
+repositório `matheusgodoy8/zapzap` e um destes valores reais de `BUILD_PACKAGING`:
 `DEB`, `macOS`, `AppImage`, `Windows x86_64 (exe)` ou
 `Windows arm64 (exe)`. `Copr`, `Flatpak`, `Python Package (whl)`, `RPM`, `Snap`, builds comunitários,
 customizados e checkouts sem `BuildInfo.py` não fazem request. Assim, formatos

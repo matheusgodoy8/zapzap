@@ -52,7 +52,7 @@ ZapZap is an unofficial WhatsApp Web desktop client built with Python, PyQt6 and
 | Platform | Installation |
 |----------|--------------|
 | Flatpak | https://flathub.org/apps/com.rtosta.zapzap |
-| AppImage, DEB, Windows | https://github.com/rafatosta/zapzap/releases |
+| AppImage, DEB, Windows | https://github.com/matheusgodoy8/zapzap/releases |
 | Snap | https://snapcraft.io/zapzap |
 | Fedora (COPR) | https://copr.fedorainfracloud.org/coprs/rafatosta/zapzap |
 | Python | `pip install zapzap` |

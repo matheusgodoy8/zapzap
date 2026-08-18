@@ -11,7 +11,7 @@ This mandatory record starts after version 7.4.1. The 7.4.1 entry below is the
 historical baseline; older release summaries remain available in the GitHub
 releases and the AppStream metadata.
 
-## [7.4.3] - In development
+## [7.4.4] - In development
 
 ### Fixed
 
@@ -34,6 +34,8 @@ releases and the AppStream metadata.
 
 - Adopted versioned development cycles so new work identifies itself with the
   next numeric version while release builds retain the version being published.
+- Pointed official project links, diagnostics, release checks, and verified
+  update downloads to `matheusgodoy8/zapzap`.
 
 ### Removed
 
@@ -88,6 +90,6 @@ releases and the AppStream metadata.
 - Improved reliability when ZapZap is closed by the operating system.
 - Included performance improvements.
 
-[7.4.3]: https://github.com/rafatosta/zapzap/compare/7.4.2...HEAD
-[7.4.2]: https://github.com/rafatosta/zapzap/compare/7.4.1...7.4.2
-[7.4.1]: https://github.com/rafatosta/zapzap/releases/tag/7.4.1
+[7.4.4]: https://github.com/matheusgodoy8/zapzap/compare/7.4.2...HEAD
+[7.4.2]: https://github.com/matheusgodoy8/zapzap/compare/7.4.1...7.4.2
+[7.4.1]: https://github.com/matheusgodoy8/zapzap/releases/tag/7.4.1

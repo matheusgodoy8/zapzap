@@ -70,7 +70,7 @@ class UpdatePolicyTests(unittest.TestCase):
                     UpdatePolicy.should_check(
                         "Official",
                         "GitHub Actions",
-                        "rafatosta/zapzap",
+                        "matheusgodoy8/zapzap",
                         packaging,
                     )
                 )
@@ -89,7 +89,7 @@ class UpdatePolicyTests(unittest.TestCase):
                     UpdatePolicy.should_check(
                         "Official",
                         "GitHub Actions",
-                        "rafatosta/zapzap",
+                        "matheusgodoy8/zapzap",
                         packaging,
                     )
                 )
@@ -100,13 +100,13 @@ class UpdatePolicyTests(unittest.TestCase):
                     UpdatePolicy.should_check(
                         channel,
                         "GitHub Actions",
-                        "rafatosta/zapzap",
+                        "matheusgodoy8/zapzap",
                         "DEB",
                     )
                 )
         self.assertFalse(
             UpdatePolicy.should_check(
-                "Official", "Other", "rafatosta/zapzap", "DEB"
+                "Official", "Other", "matheusgodoy8/zapzap", "DEB"
             )
         )
         self.assertFalse(
@@ -124,7 +124,7 @@ class ReleaseResponseTests(unittest.TestCase):
             "draft": False,
             "prerelease": False,
             "published_at": "2026-08-07T12:30:00Z",
-            "html_url": "https://github.com/rafatosta/zapzap/releases/tag/v7.5",
+            "html_url": "https://github.com/matheusgodoy8/zapzap/releases/tag/v7.5",
         }
         release.update(overrides)
         return json.dumps(release).encode()
@@ -135,7 +135,7 @@ class ReleaseResponseTests(unittest.TestCase):
             StableRelease(
                 "7.5",
                 date(2026, 8, 7),
-                "https://github.com/rafatosta/zapzap/releases/tag/v7.5",
+                "https://github.com/matheusgodoy8/zapzap/releases/tag/v7.5",
             ),
         )
 
@@ -143,7 +143,7 @@ class ReleaseResponseTests(unittest.TestCase):
         release = parse_stable_release(
             self._payload(
                 published_at="not-a-date",
-                html_url="https://example.com/rafatosta/zapzap/releases/tag/v7.5",
+                html_url="https://example.com/matheusgodoy8/zapzap/releases/tag/v7.5",
             )
         )
 
@@ -170,7 +170,7 @@ class ReleaseResponseTests(unittest.TestCase):
                     {
                         "name": "ZapZap-7.5-windows-x86_64.exe",
                         "browser_download_url": (
-                            "https://github.com/rafatosta/zapzap/releases/"
+                            "https://github.com/matheusgodoy8/zapzap/releases/"
                             "download/v7.5/ZapZap-7.5-windows-x86_64.exe"
                         ),
                         "size": 123,
@@ -191,7 +191,7 @@ class ReleaseResponseTests(unittest.TestCase):
             (
                 ReleaseAsset(
                     "ZapZap-7.5-windows-x86_64.exe",
-                    "https://github.com/rafatosta/zapzap/releases/"
+                    "https://github.com/matheusgodoy8/zapzap/releases/"
                     "download/v7.5/ZapZap-7.5-windows-x86_64.exe",
                     123,
                     digest,
@@ -202,13 +202,13 @@ class ReleaseResponseTests(unittest.TestCase):
     def test_artifact_selection_matches_packaging_version_and_architecture(self):
         windows = ReleaseAsset(
             "ZapZap-7.5-windows-arm64.exe",
-            "https://github.com/rafatosta/zapzap/releases/download/v7.5/a.exe",
+            "https://github.com/matheusgodoy8/zapzap/releases/download/v7.5/a.exe",
             10,
             "a" * 64,
         )
         appimage = ReleaseAsset(
             "ZapZap-7.5-linux-aarch64.AppImage",
-            "https://github.com/rafatosta/zapzap/releases/download/v7.5/a.AppImage",
+            "https://github.com/matheusgodoy8/zapzap/releases/download/v7.5/a.AppImage",
             10,
             "b" * 64,
         )
@@ -371,7 +371,7 @@ class ApplicationUpdaterTests(QtTestCase):
         updater = ApplicationUpdater(network_manager=manager)
         asset = ReleaseAsset(
             "ZapZap-7.5-windows-x86_64.exe",
-            "https://github.com/rafatosta/zapzap/releases/download/7.5/"
+            "https://github.com/matheusgodoy8/zapzap/releases/download/7.5/"
             "ZapZap-7.5-windows-x86_64.exe",
             len(payload) if size is None else size,
             digest or hashlib.sha256(payload).hexdigest(),
@@ -470,7 +470,7 @@ class UpdateUiTests(QtTestCase):
                     "7.5",
                     True,
                     date(2026, 8, 7),
-                    "https://github.com/rafatosta/zapzap/releases/tag/v7.5",
+                    "https://github.com/matheusgodoy8/zapzap/releases/tag/v7.5",
                 )
             )
             button = window.browser.btn_update_available
@@ -497,7 +497,7 @@ class UpdateUiTests(QtTestCase):
         )
 
     def test_release_notes_action_opens_only_the_validated_release_url(self):
-        release_url = "https://github.com/rafatosta/zapzap/releases/tag/v7.5"
+        release_url = "https://github.com/matheusgodoy8/zapzap/releases/tag/v7.5"
         opener = Mock(return_value=True)
         with patch(
             "zapzap.app.main_window_controller.open_external_url", opener

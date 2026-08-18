@@ -204,7 +204,7 @@ class DocumentationStructureTests(unittest.TestCase):
         self.assertLessEqual(released_on, date.today())
         comparison_link = (
             f"[{current.group('version')}]: "
-            "https://github.com/rafatosta/zapzap/compare/"
+            "https://github.com/matheusgodoy8/zapzap/compare/"
             f"{latest_release.group('version')}...HEAD"
         )
         self.assertIn(comparison_link, changelog)

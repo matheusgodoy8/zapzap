@@ -29,9 +29,9 @@ from zapzap.core.environment.environment_detector import EnvironmentDetector
 logger = logging.getLogger(__name__)
 
 LATEST_STABLE_RELEASE_URL = (
-    "https://api.github.com/repos/rafatosta/zapzap/releases/latest"
+    "https://api.github.com/repos/matheusgodoy8/zapzap/releases/latest"
 )
-OFFICIAL_REPOSITORY = "rafatosta/zapzap"
+OFFICIAL_REPOSITORY = "matheusgodoy8/zapzap"
 OFFICIAL_PROVIDER = "GitHub Actions"
 MANUAL_UPDATE_PACKAGING = frozenset(
     {
@@ -101,7 +101,7 @@ def _official_release_url(value) -> str:
     if not isinstance(value, str):
         return ""
     parsed = urlparse(value.strip())
-    expected_prefix = "/rafatosta/zapzap/releases/"
+    expected_prefix = "/matheusgodoy8/zapzap/releases/"
     if (
         parsed.scheme.casefold() != "https"
         or parsed.hostname != "github.com"
@@ -117,7 +117,7 @@ def _official_asset_url(value) -> str:
     if not isinstance(value, str):
         return ""
     parsed = urlparse(value.strip())
-    expected_prefix = "/rafatosta/zapzap/releases/download/"
+    expected_prefix = "/matheusgodoy8/zapzap/releases/download/"
     if (
         parsed.scheme.casefold() != "https"
         or parsed.hostname != "github.com"
