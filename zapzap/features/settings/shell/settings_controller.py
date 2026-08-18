@@ -166,6 +166,12 @@ class SettingsController(SettingsView):
                 "AdvancedCustomizationsSettingsController",
             ),
             SettingsPageDescriptor(
+                "attendant_signature",
+                _("Attendant identification"),
+                "zapzap.features.settings.pages.attendant_signature.controller",
+                "AttendantSignatureSettingsController",
+            ),
+            SettingsPageDescriptor(
                 "performance_experimental",
                 _("Performance experimental"),
                 "zapzap.features.settings.pages.performance_experimental.controller",

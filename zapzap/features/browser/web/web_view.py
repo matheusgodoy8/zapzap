@@ -505,6 +505,10 @@ class WebView(QWebEngineView):
         if self.user.enable and self.whatsapp_page:
             self.whatsapp_page.apply_custom_css()
 
+    def apply_attendant_signature_settings(self):
+        if self.user.enable and self.whatsapp_page:
+            self.whatsapp_page.apply_attendant_signature_settings()
+
     def close_conversation(self):
         """Simula o pressionamento da tecla 'Escape' na página."""
         if self.user.enable and self.whatsapp_page:

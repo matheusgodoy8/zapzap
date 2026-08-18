@@ -4039,3 +4039,59 @@ msgstr ""
 
 #~ msgid "Enable single process for GPU and rendering"
 #~ msgstr "Omogući jedan proces za GPU i renderovanje"
+
+#: zapzap/features/settings/shell/settings_controller.py:170 zapzap/features/settings/pages/attendant_signature/view.py:19 zapzap/features/settings/pages/attendant_signature/view.py:33
+msgid "Attendant identification"
+msgstr ""
+
+#: zapzap/features/settings/pages/attendant_signature/view.py:20
+msgid "Automatically adds the attendant's name to messages sent from this account on this computer."
+msgstr ""
+
+#: zapzap/features/settings/pages/attendant_signature/view.py:34
+msgid "These preferences are stored only for the local operating system user."
+msgstr ""
+
+#: zapzap/features/settings/pages/attendant_signature/view.py:43
+msgid "Identify attendant"
+msgstr ""
+
+#: zapzap/features/settings/pages/attendant_signature/view.py:44
+msgid "Turn attendant identification on or off."
+msgstr ""
+
+#: zapzap/features/settings/pages/attendant_signature/view.py:47
+msgid "Attendant name"
+msgstr ""
+
+#: zapzap/features/settings/pages/attendant_signature/view.py:48
+msgid "Name added on the first line of signed messages."
+msgstr ""
+
+#: zapzap/features/settings/pages/attendant_signature/view.py:53
+msgid "Identify text messages"
+msgstr ""
+
+#: zapzap/features/settings/pages/attendant_signature/view.py:54
+msgid "Add the attendant name to new text messages."
+msgstr ""
+
+#: zapzap/features/settings/pages/attendant_signature/view.py:57
+msgid "Identify media captions"
+msgstr ""
+
+#: zapzap/features/settings/pages/attendant_signature/view.py:58
+msgid "Add the attendant name before captions for images and media."
+msgstr ""
+
+#: zapzap/features/settings/pages/attendant_signature/view.py:61
+msgid "Identify media without a caption"
+msgstr ""
+
+#: zapzap/features/settings/pages/attendant_signature/view.py:62
+msgid "Use only the attendant name as the media caption."
+msgstr ""
+
+#: zapzap/features/settings/pages/attendant_signature/view.py:35
+msgid "Choose which ZapZap account to configure."
+msgstr ""

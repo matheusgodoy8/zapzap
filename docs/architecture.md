@@ -298,6 +298,21 @@ podem optar por `divider=False`. Mudanças que pedem reinício usam
 feature decide quando exibir ou acionar esses elementos, mas sua implementação
 visual permanece localizável em `ui`.
 
+A identificação nativa de atendente usa `AttendantSignatureSettings` sobre o
+`QSettings` local da instalação. Cada conta usa o identificador persistido
+`User.id` nas chaves `attendant_signature/accounts/<User.id>/*`, que guardam
+ativação, nome e os três escopos de assinatura; nenhuma delas é enviada ao
+WhatsApp nem armazenada no perfil WebEngine. A página lazy
+`attendant_signature` oferece um seletor de conta e atualiza somente a
+`WebView` correspondente ao persistir uma alteração. Em cada carregamento
+bem-sucedido, cada `PageController` lê as preferências do próprio `user_id`,
+executa o script interno `web/scripts/attendant_signature.js` diretamente no
+MainWorld e envia um objeto serializado por `json.dumps`. O runtime resolve
+exclusivamente o editor Lexical originado pelo evento e distingue composer
+normal, edição e legenda de mídia sem consultar globalmente o composer.
+JavaScript personalizado permanece um mecanismo independente e é aplicado
+depois do runtime nativo.
+
 Ao criar uma página:
 
 1. crie o pacote `pages/<nome>/` com `model`, `view`, `controller` e
@@ -498,6 +513,7 @@ Este bloco é verificado automaticamente contra
 - `zapzap.features.settings.pages.accounts`
 - `zapzap.features.settings.pages.advanced_customizations`
 - `zapzap.features.settings.pages.appearance`
+- `zapzap.features.settings.pages.attendant_signature`
 - `zapzap.features.settings.pages.debugging`
 - `zapzap.features.settings.pages.language_downloads`
 - `zapzap.features.settings.pages.network_privacy`

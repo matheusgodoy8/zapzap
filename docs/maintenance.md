@@ -146,6 +146,30 @@ dados reais para testes destrutivos de conta, cache ou configurações.
   `performance/js_memory_limit_mb` para compatibilidade. A preferência de
   cookies persistentes deve chegar a `setPersistentCookiesPolicy()`.
 
+### Identificação do atendente
+
+- Preserve o isolamento por `User.id` nas chaves locais
+  `attendant_signature/accounts/<User.id>/enabled`, `name`,
+  `sign_text_messages`, `sign_media_captions` e `sign_empty_media`. Elas
+  pertencem ao `QSettings` do usuário do sistema operacional, não ao perfil ou
+  armazenamento do WhatsApp. Não derive essa identidade do nome exibido ou da
+  posição da conta e não propague uma alteração para outras `WebView`s. As
+  chaves antigas sem escopo não são consumidas automaticamente, pois não há
+  vínculo seguro com uma conta; uma migração futura exige uma regra explícita
+  de associação para não ativar assinaturas em contas pessoais.
+- Transporte o nome somente por JSON serializado no Python. Não componha uma
+  tag `script`, não interpole texto cru e não reverta a execução direta por
+  `PageController.runJavaScript()`.
+- No runtime, parta de `event.target` e do `contenteditable` Lexical ancestral.
+  Eventos de edição ou legenda nunca podem usar o composer normal como
+  fallback. Preserve `CONTROLLED_TEXT_INSERTION_COMMAND` e os comandos Lexical
+  de quebra de linha em vez de `document.execCommand`.
+- Ao alterar o script, valide sintaxe com Node e repita em sessão gráfica real:
+  mensagens consecutivas, edição sem duplicação, legenda, mídia sem legenda em
+  ambos os estados, composer principal vazio e nomes com acentos e aspas. Em
+  instalações com múltiplas contas, valide também valores diferentes por conta,
+  alternância do seletor e ausência de assinatura cruzada.
+
 ### Proxy global e isolamento estrito
 
 - Mantenha `proxy/*` como única fonte efetiva. Não leia nem migre

@@ -61,6 +61,7 @@ packages = [
   "zapzap.features.settings.pages.accounts",
   "zapzap.features.settings.pages.advanced_customizations",
   "zapzap.features.settings.pages.appearance",
+  "zapzap.features.settings.pages.attendant_signature",
   "zapzap.features.settings.pages.debugging",
   "zapzap.features.settings.pages.language_downloads",
   "zapzap.features.settings.pages.network_privacy",
