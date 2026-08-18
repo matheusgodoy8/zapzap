@@ -15,11 +15,17 @@ releases and the AppStream metadata.
 
 ### Fixed
 
+- Fixed the Windows executable and taskbar using Python's icon by embedding the
+  ZapZap icon and assigning the process a stable Windows application identity.
 - Prevented attendant identification from redirecting typing in WhatsApp's
   conversation search to an empty message composer.
 
 ### Added
 
+- Added the total unread-message count to the Windows taskbar icon, matching
+  the existing numeric indicator used by the system tray.
+- Added an opt-in verified auto-updater and manual update checks to the About
+  page for official Windows executables and Linux AppImages.
 - Added local attendant identification for shared WhatsApp accounts, with
   isolated preferences selected by account and optional signatures for text
   messages, media captions, and media sent without a caption.

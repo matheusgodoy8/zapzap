@@ -418,7 +418,7 @@ persistência somente após `Aplicar`, e tanto o navegador quanto a página
 | `startup` | inicialização automática por plataforma |
 | `tray` | ícone, menu, contador e vínculo com a janela |
 
-## Verificação passiva de versão
+## Verificação e instalação de versão
 
 `core.update_checker` mantém separadas três responsabilidades: comparação de
 versões numéricas, política de ambiente e parsing da fonte remota. A fonte atual
@@ -427,9 +427,12 @@ prereleases e tags não numéricas são rejeitados mesmo que a resposta remota
 mude. A chamada usa `QNetworkAccessManager`, timeout de cinco segundos, nenhum
 retry e nenhum identificador de instalação.
 
-`UpdateInfo` também transporta a data de publicação e a URL de notas. A URL é
+`UpdateInfo` também transporta a data de publicação, a URL de notas e, quando
+aplicável, o asset exato da plataforma. A URL é
 aceita somente quando usa HTTPS no caminho de releases de
-`github.com/rafatosta/zapzap`; metadados opcionais inválidos são omitidos sem
+`github.com/rafatosta/zapzap`; assets só são aceitos no caminho oficial de
+download, com nome exato para versão/arquitetura, tamanho limitado e digest
+SHA-256 publicado pela API. Metadados opcionais inválidos são omitidos sem
 descartar uma versão estável válida. `ui.components.UpdateAvailablePopover`
 apresenta esses dados sem conhecer rede ou política. “Notas da versão” abre a
 release validada e “Baixar” abre `https://rtosta.com/zapzap/#download`.
@@ -439,18 +442,33 @@ e faz o painel piscar.
 
 A política exige simultaneamente canal `Official`, provedor `GitHub Actions`,
 repositório `rafatosta/zapzap` e um destes valores reais de `BUILD_PACKAGING`:
-`DEB`, `macOS`, `Windows x86_64 (exe)` ou `Windows arm64 (exe)`. `AppImage`,
-`Copr`, `Flatpak`, `Python Package (whl)`, `RPM`, `Snap`, builds comunitários,
+`DEB`, `macOS`, `AppImage`, `Windows x86_64 (exe)` ou
+`Windows arm64 (exe)`. `Copr`, `Flatpak`, `Python Package (whl)`, `RPM`, `Snap`, builds comunitários,
 customizados e checkouts sem `BuildInfo.py` não fazem request. Assim, formatos
 com atualização própria ou gerenciada externamente não recebem um aviso
 upstream conflitante.
+
+`ApplicationUpdater` pertence ao `QApplication` e sobrevive à reconstrução da
+interface. Somente os builds portáteis oficiais de Windows e AppImage podem
+baixar e instalar o asset. A preferência `updates/automatic`, desativada por
+padrão, inicia o download validado quando uma versão nova é encontrada; a
+instalação sempre exige confirmação. No AppImage, um arquivo no mesmo diretório
+é trocado atomicamente antes do reinício. No Windows, um helper PowerShell
+oculto aguarda o processo encerrar, substitui o executável portátil e o abre
+novamente. DEB e macOS recebem apenas o aviso e usam o fluxo externo existente.
 
 ## Empacotamento multiplataforma
 
 O workflow de Windows produz executáveis nativos em uma matriz com `x86_64` e
 `arm64`. Cada arquitetura usa um runner e um Python da mesma arquitetura; o
 script PowerShell verifica essa correspondência antes do PyInstaller e inclui a
-arquitetura no nome final do artefato.
+arquitetura no nome final do artefato. O bootstrap registra
+`com.rtosta.zapzap` como AppUserModelID antes de criar o `QApplication`, e o
+PyInstaller incorpora o `.ico` multirresolução mantido em `share/icons`; os dois
+identificam corretamente a janela e o executável na barra de tarefas do Windows.
+A contagem global de mensagens não lidas que alimenta a bandeja também recompõe
+o ícone da aplicação no Windows com um badge numérico, sem alterar o ícone das
+demais plataformas.
 
 ## Mapa do repositório
 

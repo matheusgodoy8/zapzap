@@ -24,7 +24,8 @@ from zapzap.core.config.settings.appearance import AppearanceSettings
 from zapzap.core.config.settings.system import SystemSettings
 from zapzap.core.environment.setup_manager import SetupManager
 from zapzap.core.theme.theme_manager import ThemeManager
-from zapzap.core.update_checker import UpdateChecker, UpdateState
+from zapzap.core.update_checker import ApplicationUpdater, UpdateChecker, UpdateState
+from zapzap.core.config.settings.updates import UpdateSettings
 from zapzap.core.i18n.translation_manager import TranslationManager
 from zapzap.features.initial_setup.controller import InitialSetupController
 from zapzap.features.donation.controller import DonationController
@@ -34,16 +35,38 @@ from zapzap.features.notifications.notification_service import (
 )
 
 
+def _set_windows_app_user_model_id():
+    """Give Windows a stable taskbar identity before any window is created."""
+    if sys.platform != "win32":
+        return False
+
+    try:
+        import ctypes
+
+        set_app_id = (
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID
+        )
+        set_app_id.argtypes = [ctypes.c_wchar_p]
+        set_app_id.restype = ctypes.c_long
+        result = set_app_id(zapzap.__desktopid__)
+    except (AttributeError, OSError, TypeError):
+        return False
+
+    return result == 0
+
+
 def create_main_window(
     webview_factory=None,
     update_state=None,
     update_checker=None,
+    application_updater=None,
 ):
     """Build a fresh MainWindow instance using the current runtime settings."""
     content = MainWindowController(
         webview_factory=webview_factory,
         update_state=update_state,
         update_checker=update_checker,
+        application_updater=application_updater,
     )
     window = (
         ClientSideWindowHost(content)
@@ -62,6 +85,7 @@ def main():
     args, _unknown = parse_startup_options()
     apply_startup_options(args)
 
+    _set_windows_app_user_model_id()
     SetupManager.apply()
     TranslationManager.apply()
 
@@ -106,6 +130,18 @@ def main():
     # request while restoring an already-known update in the rebuilt UI.
     update_state = UpdateState(app)
     update_checker = UpdateChecker(update_state, app)
+    application_updater = ApplicationUpdater(app)
+
+    def handle_automatic_update(info):
+        if (
+            info is not None
+            and info.available
+            and info.asset is not None
+            and UpdateSettings().automatic
+        ):
+            application_updater.download(info)
+
+    update_state.changed.connect(handle_automatic_update)
 
     # Create main window
     main_window = app.startInterface(
@@ -113,6 +149,7 @@ def main():
             webview_factory,
             update_state,
             update_checker,
+            application_updater,
         )
     )
     desktop_application_dbus = None

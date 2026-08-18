@@ -250,7 +250,7 @@ dados reais para testes destrutivos de conta, cache ou configurações.
 - Valide restauração normal, maximizada e fullscreen. Aparência, movimento e
   redimensionamento da moldura CSR ainda exigem uma sessão gráfica real.
 
-### Verificação passiva de versão
+### Verificação e instalação de versão
 
 - Mantenha comparação, parsing da release e política centralizados em
   `core.update_checker`; widgets apenas consomem `UpdateState`.
@@ -258,15 +258,22 @@ dados reais para testes destrutivos de conta, cache ou configurações.
   e pelos workflows. Ao adicionar ou alterar um formato, decida explicitamente
   se sua atualização é manual, própria ou gerenciada por uma distribuição.
 - Preserve o padrão conservador: canal, provedor, repositório ou packaging
-  desconhecido não inicia request. AppImage, Flatpak, Snap, RPM/COPR e pacotes
-  comunitários não devem receber o aviso manual.
+  desconhecido não inicia request. Flatpak, Snap, RPM/COPR e pacotes
+  comunitários não devem receber o aviso upstream. AppImage participa por ser
+  um binário portátil oficial; formatos gerenciados continuam com seu próprio
+  mecanismo.
 - A consulta deve continuar assíncrona, única por execução, com timeout curto,
   sem retry, persistência, telemetria, popup de erro ou `AlertManager` para
   falhas.
 - A sidebar e Sobre devem observar o mesmo estado. O botão com ícone abre o popover
   compartilhado por hover, foco ou clique; notas aceitam somente uma URL HTTPS
-  oficial da release e o botão de download abre
-  `https://rtosta.com/zapzap/#download`, nunca um asset ou instalador direto.
+  oficial da release. Downloads diretos ficam restritos a
+  `ApplicationUpdater`, que exige asset oficial com nome de versão/arquitetura,
+  tamanho, digest SHA-256 e formato básico válidos. Os demais fluxos abrem
+  `https://rtosta.com/zapzap/#download`.
+- Preserve `updates/automatic` desativada por padrão e nunca instale sem
+  confirmação. Teste separadamente a seleção x86_64/ARM64, a troca atômica do
+  AppImage e o helper pós-encerramento do Windows em sessões reais.
 - Preserve acesso por teclado, `Esc`, fechamento externo e o atraso que permite
   mover o ponteiro do botão para o popover sem fechá-lo no trajeto. No hover,
   use `Qt.Tool` sem ativação, não `Qt.Popup`, para não capturar o mouse. Não dependa
@@ -490,7 +497,12 @@ No Windows, `build-windows.yml` executa uma matriz nativa para `x86_64` e
 falhar antes do PyInstaller quando o Python estiver executando em outra
 arquitetura. O runner `windows-11-arm` ainda é uma imagem em prévia pública do
 GitHub, portanto o build ARM64 precisa ser confirmado no Actions antes da
-publicação de cada release.
+publicação de cada release. Preserve também o AppUserModelID estável aplicado
+antes do `QApplication` e a opção `--icon` do PyInstaller apontando para o `.ico`
+multirresolução versionado; valide o ícone do executável e da barra de tarefas
+em uma sessão gráfica real do Windows. A mesma validação deve confirmar que a
+contagem global de não lidas adiciona, atualiza e remove o badge numérico da
+barra de tarefas.
 
 ## Checklist de entrega
 

@@ -100,9 +100,12 @@ class SettingsController(SettingsView):
     LANGUAGE_DOWNLOADS_PAGE_ID = "language_downloads"
     ABOUT_PAGE_ID = "about"
 
-    def __init__(self, parent=None, update_state=None):
+    def __init__(self, parent=None, update_state=None, update_checker=None,
+                 application_updater=None):
         super().__init__(parent)
         self._update_state = update_state
+        self._update_checker = update_checker
+        self._application_updater = application_updater
         self.page_buttons = {}
         self._page_descriptors = {}
         self._page_instances = {}
@@ -245,7 +248,11 @@ class SettingsController(SettingsView):
         self.add_page(page)
         self._page_instances[page_id] = page
         if page_id == self.ABOUT_PAGE_ID and hasattr(page, "bind_update_state"):
-            page.bind_update_state(self._update_state)
+            page.bind_update_state(
+                self._update_state,
+                self._update_checker,
+                self._application_updater,
+            )
         return page
 
     def open_page_id(self, page_id):
