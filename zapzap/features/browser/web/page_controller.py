@@ -15,6 +15,10 @@ from zapzap.core.theme.theme_manager import ThemeManager
 from zapzap.features.permissions.permissions_manager import PermissionsManager
 from zapzap.features.browser.web.deeplink import build_open_chat_script
 from zapzap.features.browser.web.open_chat import ChatTarget, build_open_chat_url
+from zapzap.features.browser.web.attendant_signature import (
+    build_configuration_script,
+    build_initialization_script,
+)
 from zapzap.ui.typography import Typography
 
 import urllib.parse  # Para normalizar URLs
@@ -283,6 +287,8 @@ class PageController(QWebEnginePage):
     def _on_load_finished(self, success):
         """Ações realizadas após o carregamento da página."""
         if success:
+            self.initialize_attendant_signature()
+
             # Injeta os addons
             AddonsManager.inject_addons(self)
             self.apply_customizations()
@@ -293,6 +299,31 @@ class PageController(QWebEnginePage):
                 QWebEnginePage.Feature.Notifications,
                 QWebEnginePage.PermissionPolicy.PermissionGrantedByUser
             )
+
+    def initialize_attendant_signature(self):
+        """Install and configure the native attendant signature runtime."""
+        if self.user_id is None:
+            logger.warning(
+                "Cannot initialize attendant signature without an account ID"
+            )
+            return
+        self.runJavaScript(
+            build_initialization_script(
+                self.user_id,
+                debug=logger.isEnabledFor(logging.DEBUG),
+            )
+        )
+
+    def apply_attendant_signature_settings(self):
+        """Apply changed local preferences without reloading WhatsApp Web."""
+        if self.user_id is None:
+            return
+        self.runJavaScript(
+            build_configuration_script(
+                self.user_id,
+                debug=logger.isEnabledFor(logging.DEBUG),
+            )
+        )
 
     def apply_customizations(self):
         self.apply_custom_css()

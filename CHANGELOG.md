@@ -13,6 +13,12 @@ releases and the AppStream metadata.
 
 ## [7.4.3] - In development
 
+### Added
+
+- Added local attendant identification for shared WhatsApp accounts, with
+  isolated preferences selected by account and optional signatures for text
+  messages, media captions, and media sent without a caption.
+
 ### Changed
 
 - Adopted versioned development cycles so new work identifies itself with the

@@ -4491,3 +4491,59 @@ msgstr "ZapZap {latest} está disponível. Versão atual: {current}."
 
 #~ msgid "Welcome to"
 #~ msgstr "Bem-vindo ao"
+
+#: zapzap/features/settings/shell/settings_controller.py:170 zapzap/features/settings/pages/attendant_signature/view.py:19 zapzap/features/settings/pages/attendant_signature/view.py:33
+msgid "Attendant identification"
+msgstr "Identificação do atendente"
+
+#: zapzap/features/settings/pages/attendant_signature/view.py:20
+msgid "Automatically adds the attendant's name to messages sent from this account on this computer."
+msgstr "Adiciona automaticamente o nome do atendente às mensagens enviadas por esta conta neste computador."
+
+#: zapzap/features/settings/pages/attendant_signature/view.py:34
+msgid "These preferences are stored only for the local operating system user."
+msgstr "Estas preferências são armazenadas apenas para o usuário local do sistema operacional."
+
+#: zapzap/features/settings/pages/attendant_signature/view.py:43
+msgid "Identify attendant"
+msgstr "Identificar atendente"
+
+#: zapzap/features/settings/pages/attendant_signature/view.py:44
+msgid "Turn attendant identification on or off."
+msgstr "Liga ou desliga a identificação do atendente."
+
+#: zapzap/features/settings/pages/attendant_signature/view.py:47
+msgid "Attendant name"
+msgstr "Nome do atendente"
+
+#: zapzap/features/settings/pages/attendant_signature/view.py:48
+msgid "Name added on the first line of signed messages."
+msgstr "Nome adicionado na primeira linha das mensagens identificadas."
+
+#: zapzap/features/settings/pages/attendant_signature/view.py:53
+msgid "Identify text messages"
+msgstr "Identificar mensagens de texto"
+
+#: zapzap/features/settings/pages/attendant_signature/view.py:54
+msgid "Add the attendant name to new text messages."
+msgstr "Adiciona o nome do atendente às novas mensagens de texto."
+
+#: zapzap/features/settings/pages/attendant_signature/view.py:57
+msgid "Identify media captions"
+msgstr "Identificar legendas de mídia"
+
+#: zapzap/features/settings/pages/attendant_signature/view.py:58
+msgid "Add the attendant name before captions for images and media."
+msgstr "Adiciona o nome do atendente antes das legendas de imagens e mídias."
+
+#: zapzap/features/settings/pages/attendant_signature/view.py:61
+msgid "Identify media without a caption"
+msgstr "Identificar mídia sem legenda"
+
+#: zapzap/features/settings/pages/attendant_signature/view.py:62
+msgid "Use only the attendant name as the media caption."
+msgstr "Usa apenas o nome do atendente como legenda da mídia."
+
+#: zapzap/features/settings/pages/attendant_signature/view.py:35
+msgid "Choose which ZapZap account to configure."
+msgstr "Escolha qual conta do ZapZap configurar."

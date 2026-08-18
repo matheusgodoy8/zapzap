@@ -712,6 +712,12 @@ class BrowserController(BrowserView):
         for runtime in self._active_runtimes():
             runtime.page.apply_custom_css()
 
+    def apply_attendant_signature_settings_for_user_id(self, user_id):
+        """Push changed settings only to the matching active account."""
+        webview = self.webview_for_user_id(user_id)
+        if webview is not None:
+            webview.apply_attendant_signature_settings()
+
     def current_webview(self):
         current = self.pages.currentWidget()
         if self._runtime_for_page(current):
