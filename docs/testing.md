@@ -111,10 +111,10 @@ documente o que ele protege.
 | `test_spellcheck_language_picker.py` | migração, seleção múltipla transacional, pesquisa, limite, recentes, menu e perfis WebEngine |
 | `test_system_startup_settings_ui.py` | semântica de fechamento, diálogo nativo e acessibilidade |
 | `test_unix_signal_shutdown.py` | ponte POSIX, restauração do estado global e `SIGTERM` real chegando a `aboutToQuit` em subprocesso isolado |
-| `test_update_checker.py` | versões, política de builds, respostas/falhas assíncronas, metadados seguros e popover acessível compartilhado entre sidebar e Sobre |
+| `test_update_checker.py` | versões, política de builds, seleção e validação de assets oficiais, respostas/falhas assíncronas, atualização portátil e UI compartilhada entre sidebar e Sobre |
 | `test_whatsapp_app_lock.py` | botão acessível da sidebar, conta ativa, foco, sequência Qt nativa e estados transitórios do WebView |
 | `test_window_state_restore.py` | ciclo de vida compartilhado, restauração normal, maximizada e fullscreen e destruição segura do host CSR |
-| `test_windows_packaging.py` | matriz nativa x86_64/ARM64, arquitetura do Python e nomes dos executáveis Windows |
+| `test_windows_packaging.py` | matriz nativa x86_64/ARM64, arquitetura do Python, nomes dos executáveis, AppUserModelID, ícone incorporado e badge de não lidas no Windows |
 
 <!-- structure-check:tests:start -->
 - `test_about_settings_ui.py`
@@ -256,10 +256,13 @@ python tests/test_documentation_structure.py -v
 ```
 
 Esse contrato lê `zapzap.__version__` estaticamente, sem importar PyQt, e exige
-que ela seja numérica e corresponda à primeira e única seção marcada
-`In development`. Também verifica a release datada imediatamente anterior, a
-ordem das versões e o link de comparação até `HEAD`, sem impor um incremento
-patch que impediria uma mudança minor ou major decidida pelo mantenedor.
+que ela seja numérica e corresponda à primeira seção versionada. Durante o
+desenvolvimento, essa seção deve ser a única marcada `In development` e o link
+de comparação termina em `HEAD`; no commit de fechamento, o validador aceita a
+data real e exige que o link termine na própria versão. Também verifica a
+release datada imediatamente anterior e a ordem das versões, sem impor um
+incremento patch que impediria uma mudança minor ou major decidida pelo
+mantenedor.
 
 Validações complementares:
 

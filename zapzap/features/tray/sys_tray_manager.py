@@ -4,6 +4,7 @@ from PyQt6.QtGui import QAction
 
 from zapzap.assets.icons.tray_icon import TrayIcon
 from zapzap.core.config.settings.appearance import AppearanceSettings
+from zapzap.core.platform import IS_WINDOWS
 
 
 class SysTrayManager:
@@ -89,6 +90,7 @@ class SysTrayManager:
         instance._actions["donation"].triggered.connect(
             lambda: instance._open_donations(main_window))
         instance._actions["exit"].triggered.connect(main_window.request_quit)
+        instance._set_taskbar_icon(instance.number_notifications)
 
     def _disconnect_window_actions(self):
         for signal in (
@@ -106,11 +108,26 @@ class SysTrayManager:
     def _set_icon(self, icon_type: TrayIcon.Type, number_notifications=0):
         """Atualiza o ícone da bandeja."""
         self.current_icon = icon_type
+        self._set_taskbar_icon(number_notifications)
 
         if not self._settings.notification_counter_enabled:
             number_notifications = 0
 
         self._tray.setIcon(TrayIcon.getIcon(icon_type, number_notifications))
+
+    def _set_taskbar_icon(self, number_notifications):
+        """Show the total unread count on the Windows application icon."""
+        if not IS_WINDOWS:
+            return
+
+        icon = TrayIcon.getTaskbarIcon(number_notifications)
+        app = QApplication.instance()
+        if app is not None:
+            app.setWindowIcon(icon)
+
+        window = getattr(self, "_bound_window", None)
+        if window is not None:
+            window.setWindowIcon(icon)
 
     def _open_settings(self, main_window):
         main_window.open_settings()

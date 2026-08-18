@@ -1,11 +1,14 @@
 """Tests for the passive stable-release notification."""
 
 import json
+import hashlib
+from pathlib import Path
+import tempfile
 import unittest
 from datetime import date
 from unittest.mock import Mock, patch
 
-from PyQt6.QtCore import QObject, Qt, pyqtSignal
+from PyQt6.QtCore import QObject, QSettings, Qt, pyqtSignal
 from PyQt6.QtNetwork import QNetworkReply, QNetworkRequest
 from PyQt6.QtTest import QTest
 
@@ -13,13 +16,18 @@ from qt_test_case import QtTestCase
 from tools.memory.stub_webview import StubWebView
 from zapzap.app.main_window_controller import MainWindowController
 from zapzap.core import update_checker as update_module
+from zapzap.core.config.settings.updates import UpdateSettings
+from zapzap.core.config.settings_manager import SettingsManager
 from zapzap.core.update_checker import (
+    ApplicationUpdater,
     MANUAL_UPDATE_PACKAGING,
+    ReleaseAsset,
     StableRelease,
     UpdateChecker,
     UpdateInfo,
     UpdatePolicy,
     UpdateState,
+    current_update_asset,
     is_newer_version,
     parse_stable_release,
 )
@@ -49,6 +57,7 @@ class UpdatePolicyTests(unittest.TestCase):
     def test_only_real_official_manual_packages_are_checked(self):
         expected = {
             "DEB",
+            "AppImage",
             "macOS",
             "Windows x86_64 (exe)",
             "Windows arm64 (exe)",
@@ -61,7 +70,7 @@ class UpdatePolicyTests(unittest.TestCase):
                     UpdatePolicy.should_check(
                         "Official",
                         "GitHub Actions",
-                        "rafatosta/zapzap",
+                        "matheusgodoy8/zapzap",
                         packaging,
                     )
                 )
@@ -72,7 +81,6 @@ class UpdatePolicyTests(unittest.TestCase):
             "Snap",
             "RPM",
             "Copr",
-            "AppImage",
             "Python Package (whl)",
         )
         for packaging in managed:
@@ -81,7 +89,7 @@ class UpdatePolicyTests(unittest.TestCase):
                     UpdatePolicy.should_check(
                         "Official",
                         "GitHub Actions",
-                        "rafatosta/zapzap",
+                        "matheusgodoy8/zapzap",
                         packaging,
                     )
                 )
@@ -92,13 +100,13 @@ class UpdatePolicyTests(unittest.TestCase):
                     UpdatePolicy.should_check(
                         channel,
                         "GitHub Actions",
-                        "rafatosta/zapzap",
+                        "matheusgodoy8/zapzap",
                         "DEB",
                     )
                 )
         self.assertFalse(
             UpdatePolicy.should_check(
-                "Official", "Other", "rafatosta/zapzap", "DEB"
+                "Official", "Other", "matheusgodoy8/zapzap", "DEB"
             )
         )
         self.assertFalse(
@@ -116,7 +124,7 @@ class ReleaseResponseTests(unittest.TestCase):
             "draft": False,
             "prerelease": False,
             "published_at": "2026-08-07T12:30:00Z",
-            "html_url": "https://github.com/rafatosta/zapzap/releases/tag/v7.5",
+            "html_url": "https://github.com/matheusgodoy8/zapzap/releases/tag/v7.5",
         }
         release.update(overrides)
         return json.dumps(release).encode()
@@ -127,7 +135,7 @@ class ReleaseResponseTests(unittest.TestCase):
             StableRelease(
                 "7.5",
                 date(2026, 8, 7),
-                "https://github.com/rafatosta/zapzap/releases/tag/v7.5",
+                "https://github.com/matheusgodoy8/zapzap/releases/tag/v7.5",
             ),
         )
 
@@ -135,7 +143,7 @@ class ReleaseResponseTests(unittest.TestCase):
         release = parse_stable_release(
             self._payload(
                 published_at="not-a-date",
-                html_url="https://example.com/rafatosta/zapzap/releases/tag/v7.5",
+                html_url="https://example.com/matheusgodoy8/zapzap/releases/tag/v7.5",
             )
         )
 
@@ -154,9 +162,73 @@ class ReleaseResponseTests(unittest.TestCase):
             with self.subTest(payload=payload):
                 self.assertIsNone(parse_stable_release(payload))
 
+    def test_only_official_assets_with_github_digest_are_accepted(self):
+        digest = "a" * 64
+        release = parse_stable_release(
+            self._payload(
+                assets=[
+                    {
+                        "name": "ZapZap-7.5-windows-x86_64.exe",
+                        "browser_download_url": (
+                            "https://github.com/matheusgodoy8/zapzap/releases/"
+                            "download/v7.5/ZapZap-7.5-windows-x86_64.exe"
+                        ),
+                        "size": 123,
+                        "digest": f"sha256:{digest}",
+                    },
+                    {
+                        "name": "evil.exe",
+                        "browser_download_url": "https://example.com/evil.exe",
+                        "size": 1,
+                        "digest": f"sha256:{digest}",
+                    },
+                ]
+            )
+        )
+
+        self.assertEqual(
+            release.assets,
+            (
+                ReleaseAsset(
+                    "ZapZap-7.5-windows-x86_64.exe",
+                    "https://github.com/matheusgodoy8/zapzap/releases/"
+                    "download/v7.5/ZapZap-7.5-windows-x86_64.exe",
+                    123,
+                    digest,
+                ),
+            ),
+        )
+
+    def test_artifact_selection_matches_packaging_version_and_architecture(self):
+        windows = ReleaseAsset(
+            "ZapZap-7.5-windows-arm64.exe",
+            "https://github.com/matheusgodoy8/zapzap/releases/download/v7.5/a.exe",
+            10,
+            "a" * 64,
+        )
+        appimage = ReleaseAsset(
+            "ZapZap-7.5-linux-aarch64.AppImage",
+            "https://github.com/matheusgodoy8/zapzap/releases/download/v7.5/a.AppImage",
+            10,
+            "b" * 64,
+        )
+        release = StableRelease("7.5", assets=(windows, appimage))
+
+        self.assertEqual(
+            current_update_asset(release, "Windows arm64 (exe)", "ARM64"),
+            windows,
+        )
+        self.assertEqual(
+            current_update_asset(release, "AppImage", "aarch64"),
+            appimage,
+        )
+        self.assertIsNone(current_update_asset(release, "DEB", "x86_64"))
+
 
 class FakeReply(QObject):
     finished = pyqtSignal()
+    readyRead = pyqtSignal()
+    downloadProgress = pyqtSignal(int, int)
 
     def __init__(self, payload=b"", error=QNetworkReply.NetworkError.NoError):
         super().__init__()
@@ -176,7 +248,12 @@ class FakeReply(QObject):
         return None
 
     def readAll(self):
-        return self.payload
+        payload = self.payload
+        self.payload = b""
+        return payload
+
+    def abort(self):
+        pass
 
     def deleteLater(self):
         self.deleted = True
@@ -287,7 +364,78 @@ class UpdateCheckerTests(QtTestCase):
         self.assertIsNone(state.info)
 
 
+class ApplicationUpdaterTests(QtTestCase):
+    def _updater(self, payload, digest=None, size=None):
+        reply = FakeReply(payload)
+        manager = FakeNetworkManager(reply)
+        updater = ApplicationUpdater(network_manager=manager)
+        asset = ReleaseAsset(
+            "ZapZap-7.5-windows-x86_64.exe",
+            "https://github.com/matheusgodoy8/zapzap/releases/download/7.5/"
+            "ZapZap-7.5-windows-x86_64.exe",
+            len(payload) if size is None else size,
+            digest or hashlib.sha256(payload).hexdigest(),
+        )
+        info = UpdateInfo("7.4", "7.5", True, asset=asset)
+        self.addCleanup(updater.deleteLater)
+        return updater, reply, info
+
+    def test_verified_portable_executable_becomes_ready(self):
+        updater, reply, info = self._updater(b"MZverified executable")
+
+        self.assertTrue(updater.download(info))
+        reply.readyRead.emit()
+        reply.finished.emit()
+
+        self.assertEqual(updater.status, ApplicationUpdater.READY)
+        self.assertTrue(updater._download_path.exists())
+        self.addCleanup(updater._download_path.unlink, missing_ok=True)
+
+    def test_size_digest_and_executable_format_are_fail_closed(self):
+        cases = (
+            {"size": 1},
+            {"size": 999},
+            {"digest": "0" * 64},
+            {},
+        )
+        for overrides in cases:
+            with self.subTest(overrides=overrides):
+                payload = b"not an executable"
+                updater, reply, info = self._updater(payload, **overrides)
+                updater.download(info)
+                reply.finished.emit()
+                self.assertEqual(updater.status, ApplicationUpdater.FAILED)
+
+
 class UpdateUiTests(QtTestCase):
+    def test_about_page_persists_opt_in_automatic_updates(self):
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        previous_settings = SettingsManager._settings
+        SettingsManager._settings = QSettings(
+            str(Path(temporary.name) / "settings.ini"),
+            QSettings.Format.IniFormat,
+        )
+        self.addCleanup(setattr, SettingsManager, "_settings", previous_settings)
+        settings = UpdateSettings()
+        settings.automatic = False
+        self.addCleanup(setattr, settings, "automatic", False)
+        with patch.object(
+            update_module.ApplicationUpdater, "supported", return_value=True
+        ), patch.object(
+            update_module.UpdatePolicy,
+            "should_check_current_environment",
+            return_value=True,
+        ):
+            page = AboutSettingsController()
+        self.addCleanup(page.deleteLater)
+
+        self.assertFalse(page.updates_section.isHidden())
+        self.assertFalse(page.automatic_updates.isChecked())
+        page.automatic_updates.setChecked(True)
+
+        self.assertTrue(UpdateSettings().automatic)
+
     def test_rebuilt_window_restores_existing_session_state(self):
         state = UpdateState()
         checker = Mock()
@@ -322,7 +470,7 @@ class UpdateUiTests(QtTestCase):
                     "7.5",
                     True,
                     date(2026, 8, 7),
-                    "https://github.com/rafatosta/zapzap/releases/tag/v7.5",
+                    "https://github.com/matheusgodoy8/zapzap/releases/tag/v7.5",
                 )
             )
             button = window.browser.btn_update_available
@@ -349,7 +497,7 @@ class UpdateUiTests(QtTestCase):
         )
 
     def test_release_notes_action_opens_only_the_validated_release_url(self):
-        release_url = "https://github.com/rafatosta/zapzap/releases/tag/v7.5"
+        release_url = "https://github.com/matheusgodoy8/zapzap/releases/tag/v7.5"
         opener = Mock(return_value=True)
         with patch(
             "zapzap.app.main_window_controller.open_external_url", opener

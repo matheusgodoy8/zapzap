@@ -11,10 +11,21 @@ This mandatory record starts after version 7.4.1. The 7.4.1 entry below is the
 historical baseline; older release summaries remain available in the GitHub
 releases and the AppStream metadata.
 
-## [7.4.3] - In development
+## [7.4.4] - 2026-08-18
+
+### Fixed
+
+- Fixed the Windows executable and taskbar using Python's icon by embedding the
+  ZapZap icon and assigning the process a stable Windows application identity.
+- Prevented attendant identification from redirecting typing in WhatsApp's
+  conversation search to an empty message composer.
 
 ### Added
 
+- Added the total unread-message count to the Windows taskbar icon, matching
+  the existing numeric indicator used by the system tray.
+- Added an opt-in verified auto-updater and manual update checks to the About
+  page for official Windows executables and Linux AppImages.
 - Added local attendant identification for shared WhatsApp accounts, with
   isolated preferences selected by account and optional signatures for text
   messages, media captions, and media sent without a caption.
@@ -25,8 +36,12 @@ releases and the AppStream metadata.
 
 - Adopted versioned development cycles so new work identifies itself with the
   next numeric version while release builds retain the version being published.
+- Pointed official project links, diagnostics, release checks, and verified
+  update downloads to `matheusgodoy8/zapzap`.
 - Embedded the source commit in generated build metadata so consecutive
   continuous AppImages have distinct, verifiable contents for update checks.
+- Allowed the documentation contract to validate a dated release-closing
+  changelog before its tag is published.
 
 ### Removed
 
@@ -81,6 +96,6 @@ releases and the AppStream metadata.
 - Improved reliability when ZapZap is closed by the operating system.
 - Included performance improvements.
 
-[7.4.3]: https://github.com/rafatosta/zapzap/compare/7.4.2...HEAD
-[7.4.2]: https://github.com/rafatosta/zapzap/compare/7.4.1...7.4.2
-[7.4.1]: https://github.com/rafatosta/zapzap/releases/tag/7.4.1
+[7.4.4]: https://github.com/matheusgodoy8/zapzap/compare/7.4.2...7.4.4
+[7.4.2]: https://github.com/matheusgodoy8/zapzap/compare/7.4.1...7.4.2
+[7.4.1]: https://github.com/matheusgodoy8/zapzap/releases/tag/7.4.1

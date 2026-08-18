@@ -1,10 +1,23 @@
 
 from enum import Enum
-from PyQt6.QtGui import QImage, QPixmap, QIcon
-from PyQt6.QtCore import QSize
+from PyQt6.QtGui import QColor, QImage, QPainter, QPen, QPixmap, QIcon
+from PyQt6.QtCore import QLineF, QRectF, QSize, Qt
 
 
 class TrayIcon:
+
+    _DIGIT_SEGMENTS = {
+        "0": "abcdef",
+        "1": "bc",
+        "2": "abdeg",
+        "3": "abcdg",
+        "4": "bcfg",
+        "5": "acdfg",
+        "6": "acdefg",
+        "7": "abc",
+        "8": "abcdefg",
+        "9": "abcdfg",
+    }
 
     class Type(Enum):
         Default = "default"
@@ -70,6 +83,92 @@ class TrayIcon:
         # Select the correct SVG template based on theme
         svg_str = TrayIcon._getSvgByTheme(theme, n)
         return TrayIcon.__build(svg_str)
+
+    @staticmethod
+    def getTaskbarIcon(qtd=0) -> QIcon:
+        """Build the Windows app icon with a compact unread-count badge."""
+        try:
+            qtd = max(0, min(int(qtd), 999))
+        except (TypeError, ValueError):
+            qtd = 0
+
+        icon = QIcon()
+        for size in (16, 24, 32, 48, 64, 128, 256):
+            pixmap = TrayIcon.getIcon().pixmap(size, size)
+            if qtd > 0:
+                TrayIcon._paint_taskbar_badge(pixmap, str(qtd))
+            icon.addPixmap(pixmap)
+        return icon
+
+    @staticmethod
+    def _paint_taskbar_badge(pixmap: QPixmap, label: str) -> None:
+        size = pixmap.width()
+        badge_height = size * 0.42
+        badge_width = max(badge_height, size * (0.30 + 0.12 * len(label)))
+        badge = QRectF(
+            size - badge_width,
+            0,
+            badge_width,
+            badge_height,
+        )
+
+        painter = QPainter(pixmap)
+        painter.setRenderHints(
+            QPainter.RenderHint.Antialiasing
+            | QPainter.RenderHint.TextAntialiasing
+        )
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.setBrush(QColor("#e01b24"))
+        painter.drawRoundedRect(
+            badge,
+            badge_height / 2,
+            badge_height / 2,
+        )
+
+        TrayIcon._paint_badge_digits(painter, badge, label)
+        painter.end()
+
+    @staticmethod
+    def _paint_badge_digits(
+        painter: QPainter,
+        badge: QRectF,
+        label: str,
+    ) -> None:
+        digit_height = badge.height() * 0.56
+        gap = badge.height() * 0.07
+        horizontal_padding = badge.height() * 0.20
+        available_width = badge.width() - 2 * horizontal_padding
+        digit_width = (available_width - gap * (len(label) - 1)) / len(label)
+        origin_y = badge.y() + (badge.height() - digit_height) / 2
+
+        segment_points = {
+            "a": ((0.20, 0.00), (0.80, 0.00)),
+            "b": ((0.88, 0.08), (0.88, 0.44)),
+            "c": ((0.88, 0.56), (0.88, 0.92)),
+            "d": ((0.20, 1.00), (0.80, 1.00)),
+            "e": ((0.12, 0.56), (0.12, 0.92)),
+            "f": ((0.12, 0.08), (0.12, 0.44)),
+            "g": ((0.20, 0.50), (0.80, 0.50)),
+        }
+        pen = QPen(QColor("white"))
+        pen.setWidthF(max(1.0, badge.height() * 0.065))
+        pen.setCapStyle(Qt.PenCapStyle.RoundCap)
+        painter.setPen(pen)
+
+        for index, digit in enumerate(label):
+            origin_x = (
+                badge.x()
+                + horizontal_padding
+                + index * (digit_width + gap)
+            )
+            for segment in TrayIcon._DIGIT_SEGMENTS[digit]:
+                start, end = segment_points[segment]
+                painter.drawLine(QLineF(
+                    origin_x + start[0] * digit_width,
+                    origin_y + start[1] * digit_height,
+                    origin_x + end[0] * digit_width,
+                    origin_y + end[1] * digit_height,
+                ))
 
     @staticmethod
     def _getNotificationData(qtd) -> dict:

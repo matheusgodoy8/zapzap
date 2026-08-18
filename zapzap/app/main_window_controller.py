@@ -10,7 +10,7 @@ from PyQt6.QtWidgets import QApplication, QDialog
 from zapzap.app.window_lifecycle import WindowLifecycle
 from zapzap.core.config.settings.appearance import AppearanceSettings
 from zapzap.core.theme.theme_manager import ThemeManager
-from zapzap.core.update_checker import UpdateChecker, UpdateState
+from zapzap.core.update_checker import ApplicationUpdater, UpdateChecker, UpdateState
 from zapzap import __downloadPage__
 from zapzap.features.alerts.alert_manager import AlertManager
 from zapzap.features.alerts.external_url import open_external_url
@@ -30,7 +30,8 @@ class MainWindowController(MainWindowView):
     """
 
     def __init__(self, parent=None, webview_factory=None,
-                 user_provider=None, update_state=None, update_checker=None):
+                 user_provider=None, update_state=None, update_checker=None,
+                 application_updater=None):
         super().__init__(parent)
         self._appearance_settings = AppearanceSettings()
         self._window_host = self
@@ -47,6 +48,11 @@ class MainWindowController(MainWindowView):
             update_checker
             if update_checker is not None
             else UpdateChecker(self.update_state, self)
+        )
+        self.application_updater = (
+            application_updater
+            if application_updater is not None
+            else ApplicationUpdater(self)
         )
         self.app_settings = None
         self._last_sanitized_key = None
@@ -331,7 +337,11 @@ class MainWindowController(MainWindowView):
             self.stackedWidget.setCurrentWidget(self.app_settings)
             return
 
-        self.app_settings = SettingsController(update_state=self.update_state)
+        self.app_settings = SettingsController(
+            update_state=self.update_state,
+            update_checker=self.update_checker,
+            application_updater=self.application_updater,
+        )
         self._guard_settings_initial_clicks(self.app_settings)
         self.stackedWidget.addWidget(self.app_settings)
         self.stackedWidget.setCurrentWidget(self.app_settings)

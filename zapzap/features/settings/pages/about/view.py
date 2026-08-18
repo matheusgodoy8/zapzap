@@ -15,7 +15,12 @@ from PyQt6.QtWidgets import (
 )
 
 from zapzap.assets.icons.user_icon import UserIcon
-from zapzap.ui.components import SettingsCard, SettingsPage, SettingsSection
+from zapzap.ui.components import (
+    SettingsCard,
+    SettingsPage,
+    SettingsSection,
+    SettingsSwitchRow,
+)
 from zapzap.ui.primitives import Button, Label
 from zapzap.ui.typography import Typography
 
@@ -245,6 +250,7 @@ class AboutSettingsView(SettingsPage):
     def _setup_ui(self):
         self.identity_header = AboutIdentityHeader(self)
         self.add_section(self.identity_header)
+        self._setup_updates_section()
         self._setup_project_support_section()
         self._setup_information_section()
         self._setup_footer()
@@ -351,18 +357,59 @@ class AboutSettingsView(SettingsPage):
     def set_technical_details(self, details):
         self.technical_details.set_details(details)
 
-    def set_update_available(self, latest_version=None):
+    def set_update_available(self, latest_version=None, installable=False):
         available = bool(latest_version)
         if available:
             title = _("ZapZap {version} is available").format(
                 version=latest_version
             )
             self.update_row.title_label.setText(title)
+            if self.update_row.description_label is not None:
+                self.update_row.description_label.setText(
+                    _("Download and install the verified update.")
+                    if installable
+                    else _("Visit the official website")
+                )
             self.update_row.setAccessibleName(title)
             self.update_row.setAccessibleDescription(
-                _("Open the official ZapZap website to download it.")
+                _("Download and install the verified update.")
+                if installable
+                else _("Open the official ZapZap website to download it.")
             )
         self.update_row.setVisible(available)
 
+    def set_update_capabilities(self, checkable: bool, installable: bool):
+        self.updates_section.setVisible(checkable)
+        self.automatic_updates_row.setVisible(installable)
+
+    def set_update_status(self, text: str):
+        self.update_status_label.setText(text)
+
     def show_copy_feedback(self):
         self.copy_system_info_button.setText(_("Information copied"))
+
+    def _setup_updates_section(self):
+        self.updates_section = SettingsSection(
+            _("Updates"),
+            _("Updates are available for official Windows and AppImage builds."),
+        )
+        card = SettingsCard()
+        self.automatic_updates_row = SettingsSwitchRow(
+            _("Automatic updates"),
+            _("Download verified releases automatically; installation still requires confirmation."),
+        )
+        self.automatic_updates = self.automatic_updates_row.checkbox
+        self.automatic_updates.setAccessibleName(_("Automatic updates"))
+        self.check_updates_button = Button(_("Check for updates"), parent=card)
+        self.check_updates_button.setAccessibleName(_("Check for updates"))
+        self.update_status_label = Label("", "row_description", card)
+        self.update_status_label.setWordWrap(True)
+        actions = QWidget(card)
+        actions_layout = QHBoxLayout(actions)
+        actions_layout.setContentsMargins(12, 8, 12, 8)
+        actions_layout.addWidget(self.update_status_label, 1)
+        actions_layout.addWidget(self.check_updates_button)
+        card.add_row(self.automatic_updates_row)
+        card.add_row(actions)
+        self.updates_section.add_card(card)
+        self.add_section(self.updates_section)

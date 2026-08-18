@@ -86,6 +86,10 @@
             : null;
     }
 
+    function isActiveEditor(element) {
+        return element.matches(":focus, :focus-within");
+    }
+
     function semanticValue(element) {
         return [
             element.getAttribute("data-testid") || "",
@@ -178,7 +182,12 @@
         }
     }
 
-    function insertSignature(editor, element, withLineBreak = true) {
+    function insertSignature(
+        editor,
+        element,
+        withLineBreak = true,
+        focusBeforeInsert = false
+    ) {
         if (
             isInserting ||
             !config.enabled ||
@@ -212,7 +221,9 @@
 
         isInserting = true;
         try {
-            element.focus();
+            if (focusBeforeInsert) {
+                element.focus();
+            }
             editor.dispatchCommand(insertText, config.attendantName);
             if (withLineBreak) {
                 if (insertLineBreak) {
@@ -261,7 +272,10 @@
             return;
         }
         const element = getOriginatingEditorElement(event.target);
-        if (!element) {
+        // WhatsApp may retarget a printable key to the empty composer while
+        // another input (notably conversation search) still owns focus. Never
+        // let that delegated event move focus away from the user's real input.
+        if (!element || !isActiveEditor(element)) {
             return;
         }
         const editor = getLexicalEditor(element);
@@ -369,7 +383,7 @@
         const element = candidates[0];
         const editor = getLexicalEditor(element);
         logDetectedContext(CONTEXT.MEDIA_CAPTION, element, editor);
-        handleMediaCaption(editor, element, true);
+        insertSignature(editor, element, false, true);
     }
 
     function installListeners() {

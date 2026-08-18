@@ -40,6 +40,12 @@ $AdditionalData = @(
     @("zapzap/features/browser/web/scripts", "zapzap/features/browser/web/scripts")
 )
 
+$ApplicationIcon = "share/icons/com.rtosta.zapzap.ico"
+
+if (-not (Test-Path $ApplicationIcon)) {
+    throw "Icone do aplicativo nao encontrado: $ApplicationIcon"
+}
+
 Write-Host "# === Instalando dependências ==="
 python -m pip install --upgrade pip
 python -m pip install pyinstaller
@@ -82,6 +88,7 @@ $Args = @(
     "--onefile",
     "--windowed",
     "--noconfirm",
+    "--icon", $ApplicationIcon,
     "--collect-submodules", "zapzap.features.settings.pages"
 )
 
