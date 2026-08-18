@@ -256,10 +256,13 @@ python tests/test_documentation_structure.py -v
 ```
 
 Esse contrato lê `zapzap.__version__` estaticamente, sem importar PyQt, e exige
-que ela seja numérica e corresponda à primeira e única seção marcada
-`In development`. Também verifica a release datada imediatamente anterior, a
-ordem das versões e o link de comparação até `HEAD`, sem impor um incremento
-patch que impediria uma mudança minor ou major decidida pelo mantenedor.
+que ela seja numérica e corresponda à primeira seção versionada. Durante o
+desenvolvimento, essa seção deve ser a única marcada `In development` e o link
+de comparação termina em `HEAD`; no commit de fechamento, o validador aceita a
+data real e exige que o link termine na própria versão. Também verifica a
+release datada imediatamente anterior e a ordem das versões, sem impor um
+incremento patch que impediria uma mudança minor ou major decidida pelo
+mantenedor.
 
 Validações complementares:
 

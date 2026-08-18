@@ -11,7 +11,7 @@ This mandatory record starts after version 7.4.1. The 7.4.1 entry below is the
 historical baseline; older release summaries remain available in the GitHub
 releases and the AppStream metadata.
 
-## [7.4.4] - In development
+## [7.4.4] - 2026-08-18
 
 ### Fixed
 
@@ -40,6 +40,8 @@ releases and the AppStream metadata.
   update downloads to `matheusgodoy8/zapzap`.
 - Embedded the source commit in generated build metadata so consecutive
   continuous AppImages have distinct, verifiable contents for update checks.
+- Allowed the documentation contract to validate a dated release-closing
+  changelog before its tag is published.
 
 ### Removed
 
@@ -94,6 +96,6 @@ releases and the AppStream metadata.
 - Improved reliability when ZapZap is closed by the operating system.
 - Included performance improvements.
 
-[7.4.4]: https://github.com/matheusgodoy8/zapzap/compare/7.4.2...HEAD
+[7.4.4]: https://github.com/matheusgodoy8/zapzap/compare/7.4.2...7.4.4
 [7.4.2]: https://github.com/matheusgodoy8/zapzap/compare/7.4.1...7.4.2
 [7.4.1]: https://github.com/matheusgodoy8/zapzap/releases/tag/7.4.1

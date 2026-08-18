@@ -353,7 +353,8 @@ O ciclo permanente de versão e release é:
 2. **Fechamento:** revise as entradas e substitua somente `In development` pela
    data real no formato `YYYY-MM-DD`. Mantenha `zapzap.__version__` nessa mesma
    versão e altere o link de comparação para terminar na tag que será
-   publicada.
+   publicada. O contrato documental aceita explicitamente esse estado fechado
+   para que o commit de release passe nas mesmas verificações do desenvolvimento.
 3. **Tag, build e publicação:** gere as notas do GitHub Release a partir da
    seção fechada e mantenha a versão inalterada durante o commit, a tag, os
    builds e a publicação. Não abra a próxima versão antes dessa etapa, pois os
