@@ -13,6 +13,11 @@ releases and the AppStream metadata.
 
 ## [7.4.3] - In development
 
+### Fixed
+
+- Prevented attendant identification from redirecting typing in WhatsApp's
+  conversation search to an empty message composer.
+
 ### Added
 
 - Added local attendant identification for shared WhatsApp accounts, with

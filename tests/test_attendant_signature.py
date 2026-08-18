@@ -401,6 +401,10 @@ class FakeElement {
     }
     getAttribute(name) { return this.attributes[name] || null; }
     matches(selector) {
+        if (selector === ":focus, :focus-within") {
+            return this === document.activeElement ||
+                this.contains(document.activeElement);
+        }
         if (selector === '[contenteditable="true"]') {
             return this.attributes.contenteditable === "true";
         }
@@ -449,12 +453,16 @@ class FakeElement {
     querySelectorAll(selector) {
         return this.descendants().filter((element) => element.matches(selector));
     }
-    focus() {}
+    contains(element) {
+        return element === this || this.descendants().includes(element);
+    }
+    focus() { document.activeElement = this; }
 }
 
 class FakeDocument {
     constructor() {
         this.body = new FakeElement();
+        this.activeElement = this.body;
         this.listeners = new Map();
     }
     addEventListener(type, callback) { this.listeners.set(type, callback); }
@@ -504,6 +512,7 @@ function configure(overrides = {}) {
     });
 }
 function typeIn(element) {
+    element.focus();
     document.dispatch("keydown", {
         target: element, key: "B", isComposing: false,
         ctrlKey: false, altKey: false, metaKey: false, shiftKey: false,
@@ -530,6 +539,19 @@ assert(normal.element.innerText === "Matheus Godoy\n", "normal composer");
 normal.element.innerText = "Matheus Godoy\nBom dia";
 typeIn(normal.element);
 assert(normal.element.innerText === "Matheus Godoy\nBom dia", "duplicate signature");
+
+const redirectedComposer = editorElement("conversation-compose-box-input");
+const search = new FakeElement({ tag: "input", "data-testid": "chat-list-search" });
+search.focus();
+document.dispatch("keydown", {
+    target: redirectedComposer.element, key: "B", isComposing: false,
+    ctrlKey: false, altKey: false, metaKey: false, shiftKey: false,
+});
+assert(
+    redirectedComposer.element.innerText === "",
+    "delegated search key signed the empty composer"
+);
+assert(document.activeElement === search, "delegated search key stole focus");
 
 const mainBehindEdit = editorElement("conversation-compose-box-input");
 const dialog = new FakeElement({ role: "dialog" }, document.body);
