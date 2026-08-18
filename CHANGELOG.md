@@ -29,6 +29,8 @@ releases and the AppStream metadata.
 - Added local attendant identification for shared WhatsApp accounts, with
   isolated preferences selected by account and optional signatures for text
   messages, media captions, and media sent without a caption.
+- Added a rolling `continuous` GitHub pre-release that rebuilds and replaces
+  Windows and AppImage assets after every push to the main branch.
 
 ### Changed
 
@@ -36,6 +38,8 @@ releases and the AppStream metadata.
   next numeric version while release builds retain the version being published.
 - Pointed official project links, diagnostics, release checks, and verified
   update downloads to `matheusgodoy8/zapzap`.
+- Embedded the source commit in generated build metadata so consecutive
+  continuous AppImages have distinct, verifiable contents for update checks.
 
 ### Removed
 

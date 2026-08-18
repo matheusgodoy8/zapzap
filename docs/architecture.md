@@ -470,6 +470,15 @@ A contagem global de mensagens não lidas que alimenta a bandeja também recomp�
 o ícone da aplicação no Windows com um badge numérico, sem alterar o ícone das
 demais plataformas.
 
+`continuous-release.yml` reage a cada `push` na branch `main`, move a tag não
+numérica `continuous` para o commit recebido e atualiza uma única pré-release.
+Depois delega os builds aos workflows reutilizáveis de Windows e AppImage, que
+publicam artefatos `x86_64` e `arm64`. A pré-release e a tag não numérica evitam
+que esse canal de desenvolvimento seja interpretado como uma versão estável.
+Execuções anteriores do mesmo grupo são canceladas quando chega um commit novo.
+O `BuildInfo.py` gerado inclui `GITHUB_SHA`, garantindo conteúdo e digest
+distintos mesmo quando a versão numérica e o nome do asset permanecem iguais.
+
 ## Mapa do repositório
 
 | Caminho | Conteúdo |
@@ -482,7 +491,7 @@ demais plataformas.
 | `share/` | desktop entry, ícone, metadados AppStream e screenshots |
 | `tools/` | manifesto/runner Flatpak e gerenciador de traduções |
 | `.github/packaging/` | scripts e arquivos de build por formato |
-| `.github/workflows/` | qualidade, builds, pré-release e publicação |
+| `.github/workflows/` | qualidade, builds, pré-release contínua e publicação estável |
 | `pyproject.toml` | metadados, dependências, entry point e pacotes |
 | `run.py` | entrada conveniente para execução pelo checkout |
 | `requirements.txt` | dependências usadas por fluxos legados/auxiliares |

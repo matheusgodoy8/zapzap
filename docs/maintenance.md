@@ -462,10 +462,23 @@ Workflows mantidos:
 - `build-rpm.yml`
 - `build-snap.yml`
 - `build-windows.yml`
+- `continuous-release.yml`
 - `quality.yml`
 - `release-candidate.yml`
 - `release-deploy.yml`
 <!-- structure-check:workflows:end -->
+
+`continuous-release.yml` mantém uma única pré-release de desenvolvimento sob a
+tag móvel `continuous`. Todo `push` na branch `main` substitui os assets antigos
+e chama somente os workflows reutilizáveis de Windows e AppImage. Preserve a
+marcação de pré-release, a tag não numérica, o cancelamento por concorrência e a
+remoção de assets anteriores: essas propriedades evitam que builds de commits
+sejam tratados como releases estáveis ou misturem arquivos de execuções
+diferentes. Os workflows chamados continuam sendo a fonte de verdade das
+matrizes de arquitetura e dos scripts de empacotamento. Preserve também o
+`BUILD_COMMIT` derivado de `GITHUB_SHA` no `BuildInfo.py`: ele torna cada build
+rastreável e garante um digest diferente para atualizadores que comparam o
+conteúdo do asset, mesmo sem alterar a versão numérica em desenvolvimento.
 
 Antes de uma release, revise a versão em `zapzap/__init__.py`, consolide a
 seção correspondente de `CHANGELOG.md`, feche-a com a data real e verifique
