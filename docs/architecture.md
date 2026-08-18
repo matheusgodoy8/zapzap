@@ -452,6 +452,13 @@ O workflow de Windows produz executáveis nativos em uma matriz com `x86_64` e
 script PowerShell verifica essa correspondência antes do PyInstaller e inclui a
 arquitetura no nome final do artefato.
 
+`continuous-release.yml` reage a cada `push` na branch `main`, move a tag não
+numérica `continuous` para o commit recebido e atualiza uma única pré-release.
+Depois delega os builds aos workflows reutilizáveis de Windows e AppImage, que
+publicam artefatos `x86_64` e `arm64`. A pré-release e a tag não numérica evitam
+que esse canal de desenvolvimento seja interpretado como uma versão estável.
+Execuções anteriores do mesmo grupo são canceladas quando chega um commit novo.
+
 ## Mapa do repositório
 
 | Caminho | Conteúdo |
@@ -464,7 +471,7 @@ arquitetura no nome final do artefato.
 | `share/` | desktop entry, ícone, metadados AppStream e screenshots |
 | `tools/` | manifesto/runner Flatpak e gerenciador de traduções |
 | `.github/packaging/` | scripts e arquivos de build por formato |
-| `.github/workflows/` | qualidade, builds, pré-release e publicação |
+| `.github/workflows/` | qualidade, builds, pré-release contínua e publicação estável |
 | `pyproject.toml` | metadados, dependências, entry point e pacotes |
 | `run.py` | entrada conveniente para execução pelo checkout |
 | `requirements.txt` | dependências usadas por fluxos legados/auxiliares |

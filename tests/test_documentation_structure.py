@@ -21,6 +21,9 @@ DOCS_INDEX_PATH = DOCS_ROOT / "README.md"
 AGENT_GUIDE_PATH = REPOSITORY_ROOT / "AGENTS.md"
 CHANGELOG_PATH = REPOSITORY_ROOT / "CHANGELOG.md"
 PACKAGE_INIT_PATH = REPOSITORY_ROOT / "zapzap" / "__init__.py"
+CONTINUOUS_RELEASE_PATH = (
+    REPOSITORY_ROOT / ".github" / "workflows" / "continuous-release.yml"
+)
 
 VERSION_PATTERN = re.compile(r"\d+(?:\.\d+)+")
 VERSION_HEADING_PATTERN = re.compile(
@@ -150,6 +153,18 @@ class DocumentationStructureTests(unittest.TestCase):
         self.assert_inventory(MAINTENANCE_PATH, "tools", tools)
         self.assert_inventory(MAINTENANCE_PATH, "packaging", packaging)
         self.assert_inventory(MAINTENANCE_PATH, "workflows", workflows)
+
+    def test_continuous_release_is_rolling_and_reuses_platform_builds(self):
+        workflow = CONTINUOUS_RELEASE_PATH.read_text(encoding="utf-8")
+        self.assertIn("branches: [main]", workflow)
+        self.assertIn("group: continuous-release", workflow)
+        self.assertIn("cancel-in-progress: true", workflow)
+        self.assertIn("RELEASE_TAG: continuous", workflow)
+        self.assertIn("--prerelease", workflow)
+        self.assertIn("gh release delete-asset", workflow)
+        self.assertIn("uses: ./.github/workflows/build-appimage.yml", workflow)
+        self.assertIn("uses: ./.github/workflows/build-windows.yml", workflow)
+        self.assertEqual(workflow.count("release_upload: true"), 2)
 
     def test_agent_guide_points_to_the_maintenance_contract(self):
         guide = AGENT_GUIDE_PATH.read_text(encoding="utf-8")
