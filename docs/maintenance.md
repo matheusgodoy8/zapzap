@@ -271,16 +271,19 @@ dados reais para testes destrutivos de conta, cache ou configurações.
   `ApplicationUpdater`, que exige asset oficial com nome de versão/arquitetura,
   tamanho, digest SHA-256 e formato básico válidos. Os demais fluxos abrem
   `https://rtosta.com/zapzap/#download`.
-- Preserve `updates/automatic` desativada por padrão e nunca instale sem
-  confirmação. Teste separadamente a seleção x86_64/ARM64, a troca atômica do
-  AppImage e o helper pós-encerramento do Windows em sessões reais.
+- Preserve `updates/automatic` e `updates/prereleases` desativadas por padrão e
+  nunca instale sem confirmação. O canal opcional deve aceitar somente RCs no
+  formato `X.Y.Z-rc.N`, ignorar `continuous` e usar `BUILD_RELEASE_TAG` para
+  comparar RCs instaladas. Teste separadamente a seleção x86_64/ARM64, a troca
+  atômica do AppImage e o helper pós-encerramento do Windows em sessões reais.
 - Preserve acesso por teclado, `Esc`, fechamento externo e o atraso que permite
   mover o ponteiro do botão para o popover sem fechá-lo no trajeto. No hover,
   use `Qt.Tool` sem ativação, não `Qt.Popup`, para não capturar o mouse. Não dependa
   apenas de cor para comunicar a atualização.
-- Teste política, ordenação numérica, resposta inválida, draft, prerelease,
-  timeout, ausência de rede, URL não oficial, metadados do popover e propriedades
-  semânticas da UI sem Internet real.
+- Teste política, ordenação estável/RC, resposta inválida, draft, opt-in de
+  pré-release, rejeição de `continuous`, timeout, ausência de rede, URL não
+  oficial, metadados do popover e propriedades semânticas da UI sem Internet
+  real.
 
 ### Doações e links externos
 

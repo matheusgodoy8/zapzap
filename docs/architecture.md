@@ -58,8 +58,9 @@ mecanismo POSIX. `SIGINT` e `SIGHUP` preservam sua semântica anterior.
 
 Depois que o event loop começa, `MainWindowController` inicia no máximo uma
 consulta assíncrona de release por execução. `core.update_checker`
-faz a política conservadora por `BuildInfo`, consulta somente a release estável
-mais recente e publica um `UpdateState` efêmero. A abertura da janela não aguarda
+faz a política conservadora por `BuildInfo`, consulta a release estável mais
+recente ou, por adesão explícita, o feed que inclui release candidates, e publica
+um `UpdateState` efêmero. A abertura da janela não aguarda
 a rede e falhas não entram no fluxo de alertas. O estado e o checker pertencem
 ao `QApplication`, portanto sobrevivem a uma reconstrução apenas da interface
 sem repetir a consulta.
@@ -421,11 +422,13 @@ persistência somente após `Aplicar`, e tanto o navegador quanto a página
 ## Verificação e instalação de versão
 
 `core.update_checker` mantém separadas três responsabilidades: comparação de
-versões numéricas, política de ambiente e parsing da fonte remota. A fonte atual
-é `https://api.github.com/repos/matheusgodoy8/zapzap/releases/latest`; drafts,
-prereleases e tags não numéricas são rejeitados mesmo que a resposta remota
-mude. A chamada usa `QNetworkAccessManager`, timeout de cinco segundos, nenhum
-retry e nenhum identificador de instalação.
+versões, política de ambiente e parsing da fonte remota. Por padrão, a fonte é
+`https://api.github.com/repos/matheusgodoy8/zapzap/releases/latest`. A preferência
+`updates/prereleases`, também desativada por padrão, muda a consulta automática e
+manual para o feed das releases e admite somente tags `X.Y.Z-rc.N` marcadas como
+pré-release. Drafts, a tag móvel `continuous` e quaisquer outras tags não
+numéricas continuam rejeitadas. A chamada usa `QNetworkAccessManager`, timeout
+de cinco segundos, nenhum retry e nenhum identificador de instalação.
 
 `UpdateInfo` também transporta a data de publicação, a URL de notas e, quando
 aplicável, o asset exato da plataforma. A URL é
@@ -452,7 +455,9 @@ upstream conflitante.
 interface. Somente os builds portáteis oficiais de Windows e AppImage podem
 baixar e instalar o asset. A preferência `updates/automatic`, desativada por
 padrão, inicia o download validado quando uma versão nova é encontrada; a
-instalação sempre exige confirmação. No AppImage, um arquivo no mesmo diretório
+instalação sempre exige confirmação. `BUILD_RELEASE_TAG` identifica o release
+candidate empacotado sem alterar `zapzap.__version__`, que permanece numérica,
+permitindo comparar uma RC instalada com a seguinte. No AppImage, um arquivo no mesmo diretório
 é trocado atomicamente antes do reinício. No Windows, um helper PowerShell
 oculto aguarda o processo encerrar, substitui o executável portátil e o abre
 novamente. DEB e macOS recebem apenas o aviso e usam o fluxo externo existente.

@@ -52,7 +52,9 @@ jobs:
           chmod +x .github/packaging/common/build-info.sh
           chmod +x .github/packaging/appimage/build.sh
       - name: Create BuildInfo.py
-        run: .github/packaging/common/build-info.sh "AppImage"
+        env:
+          BUILD_RELEASE_TAG: ${{ inputs.release_tag }}
+        run: .github/packaging/common/build-info.sh "AppImage" "$BUILD_RELEASE_TAG"
       - name: Preparing Container
         uses: pkgforge-dev/anylinux-setup-action@v2
       - name: Build AppImage

@@ -20,12 +20,19 @@ except ImportError:
     BUILD_REPOSITORY = _("Unknown")
     BUILD_PACKAGING = _("Unknown")
 
+try:
+    from zapzap.BuildInfo import BUILD_RELEASE_TAG
+except ImportError:
+    # BuildInfo files created before release-channel support remain compatible.
+    BUILD_RELEASE_TAG = ""
+
 
 class EnvironmentDetector:
     CHANNEL = BUILD_CHANNEL
     PROVIDER = BUILD_PROVIDER
     BUILD_REPOSITORY = BUILD_REPOSITORY
     PACKAGING = BUILD_PACKAGING
+    RELEASE_TAG = BUILD_RELEASE_TAG
 
     @classmethod
     def is_official(cls) -> bool:

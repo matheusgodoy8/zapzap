@@ -112,7 +112,7 @@ documente o que ele protege.
 | `test_spellcheck_language_picker.py` | migração, seleção múltipla transacional, pesquisa, limite, recentes, menu e perfis WebEngine |
 | `test_system_startup_settings_ui.py` | semântica de fechamento, diálogo nativo e acessibilidade |
 | `test_unix_signal_shutdown.py` | ponte POSIX, restauração do estado global e `SIGTERM` real chegando a `aboutToQuit` em subprocesso isolado |
-| `test_update_checker.py` | versões, política de builds, seleção e validação de assets oficiais, respostas/falhas assíncronas, atualização portátil e UI compartilhada entre sidebar e Sobre |
+| `test_update_checker.py` | versões estáveis/RC, preferência de pré-release, rejeição de `continuous`, política de builds, seleção e validação de assets oficiais, respostas/falhas assíncronas, atualização portátil e UI compartilhada entre sidebar e Sobre |
 | `test_whatsapp_app_lock.py` | botão acessível da sidebar, conta ativa, foco, sequência Qt nativa e estados transitórios do WebView |
 | `test_window_state_restore.py` | ciclo de vida compartilhado, restauração normal, maximizada e fullscreen e destruição segura do host CSR |
 | `test_windows_packaging.py` | matriz nativa x86_64/ARM64, arquitetura do Python, nomes dos executáveis, AppUserModelID, ícone incorporado e badge de não lidas no Windows |

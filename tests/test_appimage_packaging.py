@@ -36,6 +36,14 @@ class AppImagePackagingTest(unittest.TestCase):
 
         self.assertIn('BUILD_COMMIT = "${GITHUB_SHA:-unknown}"', script)
 
+    def test_release_build_embeds_tag_for_rc_update_comparison(self):
+        script = BUILD_INFO_SCRIPT.read_text(encoding="utf-8")
+        workflow = APPIMAGE_WORKFLOW.read_text(encoding="utf-8")
+
+        self.assertIn('BUILD_RELEASE_TAG = "${RELEASE_TAG}"', script)
+        self.assertIn("BUILD_RELEASE_TAG: ${{ inputs.release_tag }}", workflow)
+        self.assertIn('"$BUILD_RELEASE_TAG"', workflow)
+
     def test_ffmpeg_uses_the_same_repository_transaction_as_qt_webengine(self):
         script = GET_DEPENDENCIES_SCRIPT.read_text(encoding="utf-8")
 

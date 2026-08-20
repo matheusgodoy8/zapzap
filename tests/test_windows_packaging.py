@@ -47,6 +47,8 @@ class WindowsPackagingTest(unittest.TestCase):
             "dist/ZapZap-*-windows-${{ matrix.artifact_arch }}.exe"
         )
         self.assertEqual(workflow.count(artifact_pattern), 2)
+        self.assertIn("BUILD_RELEASE_TAG: ${{ inputs.release_tag }}", workflow)
+        self.assertIn('"$BUILD_RELEASE_TAG"', workflow)
 
     def test_build_script_rejects_mismatched_python_architecture(self):
         script = WINDOWS_BUILD_SCRIPT.read_text(encoding="utf-8")

@@ -15,6 +15,8 @@ releases and the AppStream metadata.
 
 ### Added
 
+- Added an opt-in pre-release channel to automatic and manual update checks for
+  official Windows executables and Linux AppImages.
 - Added the total unread-message count to supported Linux taskbars through
   Qt's native application badge integration.
 

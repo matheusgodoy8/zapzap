@@ -381,6 +381,7 @@ class AboutSettingsView(SettingsPage):
     def set_update_capabilities(self, checkable: bool, installable: bool):
         self.updates_section.setVisible(checkable)
         self.automatic_updates_row.setVisible(installable)
+        self.prerelease_updates_row.setVisible(installable)
 
     def set_update_status(self, text: str):
         self.update_status_label.setText(text)
@@ -400,6 +401,12 @@ class AboutSettingsView(SettingsPage):
         )
         self.automatic_updates = self.automatic_updates_row.checkbox
         self.automatic_updates.setAccessibleName(_("Automatic updates"))
+        self.prerelease_updates_row = SettingsSwitchRow(
+            _("Pre-release updates"),
+            _("Include release candidates, which may be less stable."),
+        )
+        self.prerelease_updates = self.prerelease_updates_row.checkbox
+        self.prerelease_updates.setAccessibleName(_("Pre-release updates"))
         self.check_updates_button = Button(_("Check for updates"), parent=card)
         self.check_updates_button.setAccessibleName(_("Check for updates"))
         self.update_status_label = Label("", "row_description", card)
@@ -410,6 +417,7 @@ class AboutSettingsView(SettingsPage):
         actions_layout.addWidget(self.update_status_label, 1)
         actions_layout.addWidget(self.check_updates_button)
         card.add_row(self.automatic_updates_row)
+        card.add_row(self.prerelease_updates_row)
         card.add_row(actions)
         self.updates_section.add_card(card)
         self.add_section(self.updates_section)

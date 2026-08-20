@@ -31,6 +31,7 @@ class AboutSettingsController(AboutSettingsView):
         self._application_updater = None
         self._update_settings = UpdateSettings()
         self.automatic_updates.setChecked(self._update_settings.automatic)
+        self.prerelease_updates.setChecked(self._update_settings.prereleases)
         self.set_update_capabilities(
             UpdatePolicy.should_check_current_environment(),
             ApplicationUpdater.supported(),
@@ -56,6 +57,7 @@ class AboutSettingsController(AboutSettingsView):
         self.credits_row.clicked.connect(self._show_credits)
         self.copy_system_info_button.clicked.connect(self._copy_system_information)
         self.automatic_updates.toggled.connect(self._set_automatic_updates)
+        self.prerelease_updates.toggled.connect(self._set_prerelease_updates)
         self.check_updates_button.clicked.connect(self._check_for_updates)
 
     def _copy_system_information(self):
@@ -140,6 +142,11 @@ class AboutSettingsController(AboutSettingsView):
             and self._application_updater is not None
         ):
             self._application_updater.download(info)
+
+    def _set_prerelease_updates(self, enabled):
+        self._update_settings.prereleases = enabled
+        if self._update_checker is not None:
+            self._check_for_updates()
 
     def _check_for_updates(self):
         if self._update_checker is None or not self._update_checker.check_now():

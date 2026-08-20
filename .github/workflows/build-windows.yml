@@ -58,7 +58,9 @@ jobs:
           chmod +x .github/packaging/common/build-info.sh
       - name: Create BuildInfo.py
         shell: bash
-        run: .github/packaging/common/build-info.sh "Windows ${{ matrix.artifact_arch }} (exe)"
+        env:
+          BUILD_RELEASE_TAG: ${{ inputs.release_tag }}
+        run: .github/packaging/common/build-info.sh "Windows ${{ matrix.artifact_arch }} (exe)" "$BUILD_RELEASE_TAG"
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}

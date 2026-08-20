@@ -1,4 +1,4 @@
-"""Non-blocking stable-release checks for official manual packages."""
+"""Non-blocking release checks for official manual packages."""
 
 from __future__ import annotations
 
@@ -23,6 +23,7 @@ from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkReply, QNetworkReques
 from PyQt6.QtWidgets import QApplication
 
 from zapzap import __version__
+from zapzap.core.config.settings.updates import UpdateSettings
 from zapzap.core.environment.environment_detector import EnvironmentDetector
 
 
@@ -30,6 +31,9 @@ logger = logging.getLogger(__name__)
 
 LATEST_STABLE_RELEASE_URL = (
     "https://api.github.com/repos/matheusgodoy8/zapzap/releases/latest"
+)
+RELEASES_URL = (
+    "https://api.github.com/repos/matheusgodoy8/zapzap/releases?per_page=20"
 )
 OFFICIAL_REPOSITORY = "matheusgodoy8/zapzap"
 OFFICIAL_PROVIDER = "GitHub Actions"
@@ -43,6 +47,10 @@ MANUAL_UPDATE_PACKAGING = frozenset(
     }
 )
 _VERSION_PATTERN = re.compile(r"^[vV]?(\d+(?:\.\d+)*)$")
+_RELEASE_VERSION_PATTERN = re.compile(
+    r"^[vV]?(\d+(?:\.\d+)*)(?:-rc\.(\d+))?$",
+    re.IGNORECASE,
+)
 
 
 @dataclass(frozen=True)
@@ -51,6 +59,12 @@ class StableRelease:
     published_on: Optional[date] = None
     release_notes_url: str = ""
     assets: tuple["ReleaseAsset", ...] = ()
+    prerelease: bool = False
+
+    @property
+    def base_version(self) -> str:
+        match = _RELEASE_VERSION_PATTERN.fullmatch(self.version)
+        return match.group(1) if match is not None else self.version
 
 
 @dataclass(frozen=True)
@@ -78,14 +92,48 @@ def parse_version(value: str) -> Optional[tuple[int, ...]]:
 def is_newer_version(current: str, latest: str) -> bool:
     """Return whether both versions are valid and ``latest`` is newer."""
 
-    current_parts = parse_version(current)
-    latest_parts = parse_version(latest)
-    if current_parts is None or latest_parts is None:
+    current_parsed = _parse_release_version(current)
+    latest_parsed = _parse_release_version(latest)
+    if current_parsed is None or latest_parsed is None:
         return False
+    current_parts, current_rc = current_parsed
+    latest_parts, latest_rc = latest_parsed
     width = max(len(current_parts), len(latest_parts))
-    return current_parts + (0,) * (width - len(current_parts)) < (
-        latest_parts + (0,) * (width - len(latest_parts))
-    )
+    current_base = current_parts + (0,) * (width - len(current_parts))
+    latest_base = latest_parts + (0,) * (width - len(latest_parts))
+    if current_base != latest_base:
+        return current_base < latest_base
+    if current_rc is None:
+        return False
+    if latest_rc is None:
+        return True
+    return current_rc < latest_rc
+
+
+def _parse_release_version(
+    value: str,
+) -> Optional[tuple[tuple[int, ...], Optional[int]]]:
+    match = _RELEASE_VERSION_PATTERN.fullmatch(str(value or "").strip())
+    if match is None:
+        return None
+    parts = [int(part) for part in match.group(1).split(".")]
+    while len(parts) > 1 and parts[-1] == 0:
+        parts.pop()
+    rc = int(match.group(2)) if match.group(2) is not None else None
+    return tuple(parts), rc
+
+
+def current_installed_version() -> str:
+    """Return the packaged RC tag when it matches the numeric app version."""
+
+    release_tag = str(EnvironmentDetector.RELEASE_TAG or "").strip()
+    parsed_tag = _parse_release_version(release_tag)
+    if parsed_tag is None or parsed_tag[1] is None:
+        return __version__
+    match = _RELEASE_VERSION_PATTERN.fullmatch(release_tag)
+    if match is None or parse_version(match.group(1)) != parse_version(__version__):
+        return __version__
+    return release_tag.lstrip("vV").casefold()
 
 
 def _parse_release_date(value) -> Optional[date]:
@@ -157,26 +205,54 @@ def _parse_release_assets(value) -> tuple[ReleaseAsset, ...]:
     return tuple(assets)
 
 
-def parse_stable_release(payload: bytes) -> Optional[StableRelease]:
-    """Extract safe stable-release metadata from a GitHub response."""
-
-    try:
-        release = json.loads(bytes(payload).decode("utf-8"))
-    except (UnicodeDecodeError, json.JSONDecodeError, TypeError, ValueError):
-        return None
+def _parse_release(release, include_prereleases: bool) -> Optional[StableRelease]:
     if not isinstance(release, dict):
         return None
-    if release.get("draft") is not False or release.get("prerelease") is not False:
+    if release.get("draft") is not False:
         return None
     tag_name = release.get("tag_name")
-    if not isinstance(tag_name, str) or parse_version(tag_name) is None:
+    parsed = _parse_release_version(tag_name)
+    if not isinstance(tag_name, str) or parsed is None:
+        return None
+    prerelease = parsed[1] is not None
+    if release.get("prerelease") is not prerelease:
+        return None
+    if prerelease and not include_prereleases:
         return None
     return StableRelease(
-        version=tag_name.lstrip("vV"),
+        version=tag_name.lstrip("vV").casefold(),
         published_on=_parse_release_date(release.get("published_at")),
         release_notes_url=_official_release_url(release.get("html_url")),
         assets=_parse_release_assets(release.get("assets")),
+        prerelease=prerelease,
     )
+
+
+def parse_release_feed(
+    payload: bytes, include_prereleases: bool = False
+) -> Optional[StableRelease]:
+    """Extract the newest allowed release from a GitHub API response."""
+
+    try:
+        response = json.loads(bytes(payload).decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError, TypeError, ValueError):
+        return None
+    releases = response if isinstance(response, list) else [response]
+    selected = None
+    for candidate in releases:
+        release = _parse_release(candidate, include_prereleases)
+        if release is not None and (
+            selected is None
+            or is_newer_version(selected.version, release.version)
+        ):
+            selected = release
+    return selected
+
+
+def parse_stable_release(payload: bytes) -> Optional[StableRelease]:
+    """Extract safe stable-release metadata from a GitHub response."""
+
+    return parse_release_feed(payload, include_prereleases=False)
 
 
 class UpdatePolicy:
@@ -228,12 +304,12 @@ def current_update_asset(
     architecture = "arm64" if machine in {"arm64", "aarch64"} else "x86_64"
     if packaging == "AppImage":
         architecture = "aarch64" if architecture == "arm64" else "x86_64"
-        expected = f"ZapZap-{release.version}-linux-{architecture}.AppImage"
+        expected = f"ZapZap-{release.base_version}-linux-{architecture}.AppImage"
     elif packaging in {
         "Windows x86_64 (exe)",
         "Windows arm64 (exe)",
     }:
-        expected = f"ZapZap-{release.version}-windows-{architecture}.exe"
+        expected = f"ZapZap-{release.base_version}-windows-{architecture}.exe"
     else:
         return None
     return next((asset for asset in release.assets if asset.name == expected), None)
@@ -265,12 +341,16 @@ class UpdateChecker(QObject):
     completed = pyqtSignal(object)
     TIMEOUT_MS = 5000
 
-    def __init__(self, state: UpdateState, parent=None, network_manager=None):
+    def __init__(
+        self, state: UpdateState, parent=None, network_manager=None, settings=None
+    ):
         super().__init__(parent)
         self._state = state
         self._network_manager = network_manager or QNetworkAccessManager(self)
+        self._settings = settings or UpdateSettings()
         self._started = False
         self._reply = None
+        self._request_includes_prereleases = False
 
     def start_once(self) -> bool:
         if self._started:
@@ -296,7 +376,13 @@ class UpdateChecker(QObject):
             )
             return False
 
-        request = QNetworkRequest(QUrl(LATEST_STABLE_RELEASE_URL))
+        self._request_includes_prereleases = bool(self._settings.prereleases)
+        release_url = (
+            RELEASES_URL
+            if self._request_includes_prereleases
+            else LATEST_STABLE_RELEASE_URL
+        )
+        request = QNetworkRequest(QUrl(release_url))
         request.setTransferTimeout(self.TIMEOUT_MS)
         request.setHeader(
             QNetworkRequest.KnownHeaders.UserAgentHeader,
@@ -327,16 +413,20 @@ class UpdateChecker(QObject):
                 self.completed.emit(None)
                 return
 
-            release = parse_stable_release(bytes(reply.readAll()))
+            release = parse_release_feed(
+                bytes(reply.readAll()),
+                include_prereleases=self._request_includes_prereleases,
+            )
             if release is None:
-                logger.debug("update check failed: invalid stable release response")
+                logger.debug("update check failed: invalid release response")
                 self.completed.emit(None)
                 return
 
+            installed_version = current_installed_version()
             info = UpdateInfo(
-                current_version=__version__,
+                current_version=installed_version,
                 latest_version=release.version,
-                available=is_newer_version(__version__, release.version),
+                available=is_newer_version(installed_version, release.version),
                 published_on=release.published_on,
                 release_notes_url=release.release_notes_url,
                 asset=current_update_asset(release),

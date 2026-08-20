@@ -4,6 +4,7 @@ import json
 import hashlib
 from pathlib import Path
 import tempfile
+from types import SimpleNamespace
 import unittest
 from datetime import date
 from unittest.mock import Mock, patch
@@ -27,8 +28,10 @@ from zapzap.core.update_checker import (
     UpdateInfo,
     UpdatePolicy,
     UpdateState,
+    current_installed_version,
     current_update_asset,
     is_newer_version,
+    parse_release_feed,
     parse_stable_release,
 )
 from zapzap.features.settings.pages.about.controller import (
@@ -47,6 +50,11 @@ class VersionComparisonTests(unittest.TestCase):
             ("7.4", "7.4.0", False),
             ("invalid", "7.5", False),
             ("7.4", "7.5-rc1", False),
+            ("7.4", "7.5-rc.1", True),
+            ("7.5-rc.1", "7.5-rc.2", True),
+            ("7.5-rc.2", "7.5-rc.1", False),
+            ("7.5-rc.2", "7.5", True),
+            ("7.5", "7.5-rc.3", False),
         )
         for current, latest, expected in cases:
             with self.subTest(current=current, latest=latest):
@@ -161,6 +169,68 @@ class ReleaseResponseTests(unittest.TestCase):
         for payload in values:
             with self.subTest(payload=payload):
                 self.assertIsNone(parse_stable_release(payload))
+
+    def test_opted_in_feed_selects_newest_rc_and_rejects_continuous(self):
+        releases = [
+            {
+                "tag_name": "continuous",
+                "draft": False,
+                "prerelease": True,
+            },
+            {
+                "tag_name": "7.5-rc.2",
+                "draft": False,
+                "prerelease": True,
+            },
+            {
+                "tag_name": "7.5-rc.1",
+                "draft": False,
+                "prerelease": True,
+            },
+            {
+                "tag_name": "7.4.4",
+                "draft": False,
+                "prerelease": False,
+            },
+        ]
+
+        release = parse_release_feed(
+            json.dumps(releases).encode(), include_prereleases=True
+        )
+
+        self.assertEqual(release, StableRelease("7.5-rc.2", prerelease=True))
+        self.assertIsNone(
+            parse_release_feed(
+                json.dumps(releases[:3]).encode(),
+                include_prereleases=False,
+            )
+        )
+
+    def test_rc_uses_numeric_base_version_in_artifact_name(self):
+        asset = ReleaseAsset(
+            "ZapZap-7.5-windows-x86_64.exe",
+            "https://github.com/matheusgodoy8/zapzap/releases/download/"
+            "7.5-rc.1/ZapZap-7.5-windows-x86_64.exe",
+            10,
+            "a" * 64,
+        )
+        release = StableRelease("7.5-rc.1", assets=(asset,), prerelease=True)
+
+        self.assertEqual(
+            current_update_asset(release, "Windows x86_64 (exe)", "AMD64"),
+            asset,
+        )
+
+    def test_packaged_rc_tag_identifies_the_installed_candidate(self):
+        with (
+            patch.object(update_module, "__version__", "7.5"),
+            patch.object(
+                update_module.EnvironmentDetector,
+                "RELEASE_TAG",
+                "v7.5-rc.2",
+            ),
+        ):
+            self.assertEqual(current_installed_version(), "7.5-rc.2")
 
     def test_only_official_assets_with_github_digest_are_accepted(self):
         digest = "a" * 64
@@ -279,10 +349,50 @@ class UpdateCheckerTests(QtTestCase):
     def _checker(self, reply):
         state = UpdateState()
         manager = FakeNetworkManager(reply)
-        checker = UpdateChecker(state, network_manager=manager)
+        settings = SimpleNamespace(prereleases=False)
+        checker = UpdateChecker(
+            state, network_manager=manager, settings=settings
+        )
         self.addCleanup(checker.deleteLater)
         self.addCleanup(state.deleteLater)
         return checker, state, manager
+
+    def test_prerelease_opt_in_uses_feed_and_accepts_release_candidates(self):
+        reply = FakeReply(
+            json.dumps(
+                [
+                    {
+                        "tag_name": "7.5-rc.2",
+                        "draft": False,
+                        "prerelease": True,
+                    },
+                    {
+                        "tag_name": "7.4.4",
+                        "draft": False,
+                        "prerelease": False,
+                    },
+                ]
+            ).encode()
+        )
+        checker, state, manager = self._checker(reply)
+        checker._settings.prereleases = True
+        with (
+            patch.object(
+                UpdatePolicy, "should_check_current_environment", return_value=True
+            ),
+            patch.object(update_module, "__version__", "7.4.4"),
+        ):
+            self.assertTrue(checker.start_once())
+            reply.finished.emit()
+
+        self.assertEqual(
+            state.info,
+            UpdateInfo("7.4.4", "7.5-rc.2", True),
+        )
+        self.assertEqual(
+            manager.requests[0].url().toString(),
+            update_module.RELEASES_URL,
+        )
 
     def test_valid_higher_release_updates_state_asynchronously(self):
         reply = FakeReply(self._payload("7.5"))
@@ -419,7 +529,9 @@ class UpdateUiTests(QtTestCase):
         self.addCleanup(setattr, SettingsManager, "_settings", previous_settings)
         settings = UpdateSettings()
         settings.automatic = False
+        settings.prereleases = False
         self.addCleanup(setattr, settings, "automatic", False)
+        self.addCleanup(setattr, settings, "prereleases", False)
         with patch.object(
             update_module.ApplicationUpdater, "supported", return_value=True
         ), patch.object(
@@ -432,9 +544,12 @@ class UpdateUiTests(QtTestCase):
 
         self.assertFalse(page.updates_section.isHidden())
         self.assertFalse(page.automatic_updates.isChecked())
+        self.assertFalse(page.prerelease_updates.isChecked())
         page.automatic_updates.setChecked(True)
+        page.prerelease_updates.setChecked(True)
 
         self.assertTrue(UpdateSettings().automatic)
+        self.assertTrue(UpdateSettings().prereleases)
 
     def test_rebuilt_window_restores_existing_session_state(self):
         state = UpdateState()
