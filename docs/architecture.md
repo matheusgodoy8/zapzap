@@ -467,8 +467,12 @@ arquitetura no nome final do artefato. O bootstrap registra
 PyInstaller incorpora o `.ico` multirresolução mantido em `share/icons`; os dois
 identificam corretamente a janela e o executável na barra de tarefas do Windows.
 A contagem global de mensagens não lidas que alimenta a bandeja também recompõe
-o ícone da aplicação no Windows com um badge numérico, sem alterar o ícone das
-demais plataformas.
+o ícone da aplicação no Windows com um badge numérico. No Linux, a mesma
+contagem é enviada a `QGuiApplication.setBadgeNumber()`; o Qt a associa ao
+launcher identificado por `com.rtosta.zapzap.desktop` nas barras de tarefas que
+oferecem essa integração, e o valor zero remove o badge. Versões anteriores do
+Qt que não expõem essa API permanecem compatíveis e simplesmente mantêm o ícone
+sem contador.
 
 `continuous-release.yml` reage a cada `push` na branch `main`, move a tag não
 numérica `continuous` para o commit recebido e atualiza uma única pré-release.

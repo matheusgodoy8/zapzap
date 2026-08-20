@@ -4,7 +4,7 @@ from PyQt6.QtGui import QAction
 
 from zapzap.assets.icons.tray_icon import TrayIcon
 from zapzap.core.config.settings.appearance import AppearanceSettings
-from zapzap.core.platform import IS_WINDOWS
+from zapzap.core.platform import IS_LINUX, IS_WINDOWS
 
 
 class SysTrayManager:
@@ -109,6 +109,7 @@ class SysTrayManager:
         """Atualiza o ícone da bandeja."""
         self.current_icon = icon_type
         self._set_taskbar_icon(number_notifications)
+        self._set_linux_launcher_badge(number_notifications)
 
         if not self._settings.notification_counter_enabled:
             number_notifications = 0
@@ -128,6 +129,22 @@ class SysTrayManager:
         window = getattr(self, "_bound_window", None)
         if window is not None:
             window.setWindowIcon(icon)
+
+    def _set_linux_launcher_badge(self, number_notifications):
+        """Show the total unread count on supported Linux taskbars."""
+        if not IS_LINUX:
+            return
+
+        app = QApplication.instance()
+        set_badge_number = getattr(app, "setBadgeNumber", None)
+        if not callable(set_badge_number):
+            return
+
+        try:
+            badge_number = max(0, int(number_notifications))
+        except (TypeError, ValueError):
+            badge_number = 0
+        set_badge_number(badge_number)
 
     def _open_settings(self, main_window):
         main_window.open_settings()

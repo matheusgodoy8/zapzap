@@ -24,6 +24,8 @@ releases and the AppStream metadata.
 
 - Added the total unread-message count to the Windows taskbar icon, matching
   the existing numeric indicator used by the system tray.
+- Added the total unread-message count to supported Linux taskbars through
+  Qt's native application badge integration.
 - Added an opt-in verified auto-updater and manual update checks to the About
   page for official Windows executables and Linux AppImages.
 - Added local attendant identification for shared WhatsApp accounts, with

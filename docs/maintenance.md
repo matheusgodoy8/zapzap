@@ -518,6 +518,14 @@ em uma sessão gráfica real do Windows. A mesma validação deve confirmar que 
 contagem global de não lidas adiciona, atualiza e remove o badge numérico da
 barra de tarefas.
 
+No Linux, o contador do launcher usa `QGuiApplication.setBadgeNumber()` e a
+identidade definida por `setDesktopFileName()`. Valide em uma sessão gráfica
+real do KDE Plasma, tanto em Wayland quanto em X11 quando disponíveis, que o
+launcher `com.rtosta.zapzap.desktop` adiciona, atualiza e remove o badge. O
+comportamento também deve ser verificado no formato de distribuição alterado,
+como AppImage ou Flatpak; ambientes sem suporte à API devem continuar abrindo o
+aplicativo normalmente, sem contador.
+
 ## Checklist de entrega
 
 - [ ] comportamento e valores persistidos foram preservados ou migrados;
