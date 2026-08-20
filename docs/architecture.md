@@ -473,11 +473,13 @@ PyInstaller incorpora o `.ico` multirresolução mantido em `share/icons`; os do
 identificam corretamente a janela e o executável na barra de tarefas do Windows.
 A contagem global de mensagens não lidas que alimenta a bandeja também recompõe
 o ícone da aplicação no Windows com um badge numérico. No Linux, a mesma
-contagem é enviada a `QGuiApplication.setBadgeNumber()`; o Qt a associa ao
-launcher identificado por `com.rtosta.zapzap.desktop` nas barras de tarefas que
-oferecem essa integração, e o valor zero remove o badge. Versões anteriores do
-Qt que não expõem essa API permanecem compatíveis e simplesmente mantêm o ícone
-sem contador.
+contagem é enviada a `QGuiApplication.setBadgeNumber()` e, explicitamente, ao
+sinal D-Bus `com.canonical.Unity.LauncherEntry.Update` consumido pelo Task
+Manager do Plasma. Os dois caminhos usam o launcher
+`application://com.rtosta.zapzap.desktop`; o valor zero remove o badge. O ícone
+da aplicação e da janela também é recomposto com a contagem como fallback para
+sessões que exibem diretamente o ícone da janela. Versões anteriores do Qt que
+não expõem a API genérica permanecem compatíveis pelo caminho D-Bus.
 
 `continuous-release.yml` reage a cada `push` na branch `main`, move a tag não
 numérica `continuous` para o commit recebido e atualiza uma única pré-release.

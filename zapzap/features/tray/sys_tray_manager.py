@@ -1,7 +1,9 @@
 from gettext import gettext as _
+from PyQt6.QtDBus import QDBusConnection, QDBusMessage
 from PyQt6.QtWidgets import QApplication, QSystemTrayIcon, QMenu
 from PyQt6.QtGui import QAction
 
+import zapzap
 from zapzap.assets.icons.tray_icon import TrayIcon
 from zapzap.core.config.settings.appearance import AppearanceSettings
 from zapzap.core.platform import IS_LINUX, IS_WINDOWS
@@ -91,6 +93,7 @@ class SysTrayManager:
             lambda: instance._open_donations(main_window))
         instance._actions["exit"].triggered.connect(main_window.request_quit)
         instance._set_taskbar_icon(instance.number_notifications)
+        instance._set_linux_launcher_badge(instance.number_notifications)
 
     def _disconnect_window_actions(self):
         for signal in (
@@ -135,16 +138,41 @@ class SysTrayManager:
         if not IS_LINUX:
             return
 
-        app = QApplication.instance()
-        set_badge_number = getattr(app, "setBadgeNumber", None)
-        if not callable(set_badge_number):
-            return
-
         try:
             badge_number = max(0, int(number_notifications))
         except (TypeError, ValueError):
             badge_number = 0
-        set_badge_number(badge_number)
+
+        app = QApplication.instance()
+        set_badge_number = getattr(app, "setBadgeNumber", None)
+        if callable(set_badge_number):
+            set_badge_number(badge_number)
+
+        self._send_plasma_launcher_badge(badge_number)
+
+        icon = TrayIcon.getTaskbarIcon(badge_number)
+        if app is not None:
+            app.setWindowIcon(icon)
+
+        window = getattr(self, "_bound_window", None)
+        if window is not None:
+            window.setWindowIcon(icon)
+
+    @staticmethod
+    def _send_plasma_launcher_badge(badge_number):
+        """Send the Unity Launcher signal consumed by Plasma Task Manager."""
+        launcher_id = f"application://{zapzap.__desktopid__}.desktop"
+        properties = {
+            "count": badge_number,
+            "count-visible": badge_number > 0,
+        }
+        message = QDBusMessage.createSignal(
+            "/com/rtosta/zapzap/LauncherEntry",
+            "com.canonical.Unity.LauncherEntry",
+            "Update",
+        )
+        message.setArguments([launcher_id, properties])
+        QDBusConnection.sessionBus().send(message)
 
     def _open_settings(self, main_window):
         main_window.open_settings()

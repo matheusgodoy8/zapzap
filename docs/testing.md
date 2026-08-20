@@ -93,7 +93,7 @@ documente o que ele protege.
 | `test_grid_thumbnail_cache.py` | limite físico/DPR, reutilização, fallback, seleção e ciclo de vida das miniaturas da grade |
 | `test_http_cache_size.py` | cache em MiB, tipos de cache, política de cookies, memória JavaScript, autocura persistida e fallbacks de perfil sem WebEngine real |
 | `test_initial_setup_ui.py` | onboarding, som, fechamento, permissões, dicionários e persistência |
-| `test_linux_launcher_badge.py` | badge global de não lidas no launcher Linux, limpeza, compatibilidade com Qt anterior e isolamento das demais plataformas |
+| `test_linux_launcher_badge.py` | badge global de não lidas no launcher Linux, payload D-Bus do Plasma, fallback do ícone, limpeza, Qt anterior e isolamento das demais plataformas |
 | `test_memory_benchmark.py` | procfs/USS, schema JSON/CSV/Markdown, isolamento WebEngine, factory stub, cenários e comparação relativa |
 | `test_network_privacy_settings_ui.py` | proxy exclusivamente global, strict proxy, credenciais, aplicar/descartar, feedback de falha do Qt, restauração e WebRTC |
 | `test_notification_sound_setting.py` | mapeamento de som e tipos dos hints Portal/Freedesktop |
