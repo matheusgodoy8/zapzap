@@ -11,6 +11,13 @@ This mandatory record starts after version 7.4.1. The 7.4.1 entry below is the
 historical baseline; older release summaries remain available in the GitHub
 releases and the AppStream metadata.
 
+## [7.4.5] - In development
+
+### Added
+
+- Added the total unread-message count to supported Linux taskbars through
+  Qt's native application badge integration.
+
 ## [7.4.4] - 2026-08-18
 
 ### Fixed
@@ -24,8 +31,6 @@ releases and the AppStream metadata.
 
 - Added the total unread-message count to the Windows taskbar icon, matching
   the existing numeric indicator used by the system tray.
-- Added the total unread-message count to supported Linux taskbars through
-  Qt's native application badge integration.
 - Added an opt-in verified auto-updater and manual update checks to the About
   page for official Windows executables and Linux AppImages.
 - Added local attendant identification for shared WhatsApp accounts, with
@@ -98,6 +103,7 @@ releases and the AppStream metadata.
 - Improved reliability when ZapZap is closed by the operating system.
 - Included performance improvements.
 
+[7.4.5]: https://github.com/matheusgodoy8/zapzap/compare/7.4.4...HEAD
 [7.4.4]: https://github.com/matheusgodoy8/zapzap/compare/7.4.2...7.4.4
 [7.4.2]: https://github.com/matheusgodoy8/zapzap/compare/7.4.1...7.4.2
 [7.4.1]: https://github.com/matheusgodoy8/zapzap/releases/tag/7.4.1
