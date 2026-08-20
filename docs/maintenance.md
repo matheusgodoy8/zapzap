@@ -504,9 +504,13 @@ e o atualizador receberia HTTP 404.
 Instale FFmpeg e Qt WebEngine na mesma transação dos repositórios oficiais do
 Arch. Não substitua FFmpeg por `ffmpeg-mini` do canal contínuo de pacotes
 reduzidos: as arquiteturas podem ser publicadas em momentos diferentes e expor
-ABIs incompatíveis. Antes do `quick-sharun`, valide com `ldd` que as bibliotecas
-Qt WebEngine não contêm dependências `not found`; essa verificação deve falhar
-antes da coleta, exibindo as bibliotecas ausentes.
+ABIs incompatíveis. O mesmo canal pode fornecer `qt6-base-mini` defasado em
+relação a QML/WebEngine; depois de instalar os pacotes reduzidos, restaure
+`qt6-base`, `qt6-declarative` e `qt6-webengine` juntos a partir dos repositórios
+oficiais. Antes do `quick-sharun`, importe `QWebEngineNotification` para detectar
+símbolos privados incompatíveis e valide com `ldd` que as bibliotecas Qt
+WebEngine não contêm dependências `not found`. Ambas as verificações devem
+falhar antes da coleta, exibindo o diagnóstico.
 
 No Windows, `build-windows.yml` executa uma matriz nativa para `x86_64` e
 `arm64`. Preserve a correspondência entre runner, arquitetura solicitada ao

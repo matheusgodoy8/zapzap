@@ -58,6 +58,34 @@ class AppImagePackagingTest(unittest.TestCase):
             script,
         )
 
+    def test_official_qt_is_restored_after_debloated_packages(self):
+        script = GET_DEPENDENCIES_SCRIPT.read_text(encoding="utf-8")
+        debloated = "get-debloated-pkgs --add-common --prefer-nano"
+        restore_lines = (
+            "pacman -S --noconfirm",
+            "    qt6-base",
+            "    qt6-declarative",
+            "    qt6-webengine",
+        )
+
+        for line in restore_lines:
+            self.assertIn(line, script)
+        self.assertLess(script.index(debloated), script.index(restore_lines[0]))
+
+    def test_qt_private_abi_is_imported_before_appimage_creation(self):
+        dependencies = GET_DEPENDENCIES_SCRIPT.read_text(encoding="utf-8")
+        make_appimage = MAKE_APPIMAGE_SCRIPT.read_text(encoding="utf-8")
+
+        self.assertIn(
+            "from PyQt6.QtWebEngineCore import QWebEngineNotification",
+            dependencies,
+        )
+        self.assertLess(
+            dependencies.index("QWebEngineNotification"),
+            dependencies.index("zapzap --help"),
+        )
+        self.assertIn("quick-sharun --make-appimage", make_appimage)
+
     def test_qt_webengine_dependencies_are_checked_before_deployment(self):
         script = MAKE_APPIMAGE_SCRIPT.read_text(encoding="utf-8")
         dependency_check = "sed -n '/not found/p'"

@@ -35,6 +35,15 @@ echo "---------------------------------------------------------------"
 # older ABI on one architecture and make the Qt libraries unloadable.
 get-debloated-pkgs --add-common --prefer-nano
 
+# The continuously published qt6-base-mini package can temporarily lag behind
+# the official Qt modules installed above. Qt private APIs require an exact
+# minor/patch match, so restore the core Qt transaction from the official Arch
+# repositories before building or importing ZapZap.
+pacman -S --noconfirm \
+    qt6-base \
+    qt6-declarative \
+    qt6-webengine
+
 echo "Downloading dictionaries..."
 git clone \
   --depth=1 \
@@ -60,6 +69,14 @@ echo "Checking installation..."
 echo "---------------------------------------------------------------"
 
 which zapzap
+
+# Fail the build before packaging if Qt Base, QML and WebEngine expose
+# incompatible private ABIs. A simple ldd check cannot detect this failure.
+python - <<'EOF'
+from PyQt6.QtWebEngineCore import QWebEngineNotification
+
+assert QWebEngineNotification is not None
+EOF
 
 zapzap --help >/dev/null 2>&1 || true
 

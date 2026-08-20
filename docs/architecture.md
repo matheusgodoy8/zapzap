@@ -488,6 +488,13 @@ Execuções anteriores do mesmo grupo são canceladas quando chega um commit nov
 O `BuildInfo.py` gerado inclui `GITHUB_SHA`, garantindo conteúdo e digest
 distintos mesmo quando a versão numérica e o nome do asset permanecem iguais.
 
+O AppImage instala dependências pelo Arch e pode aproveitar pacotes reduzidos
+publicados continuamente. Como os módulos Qt usam APIs privadas versionadas, o
+script restaura `qt6-base`, `qt6-declarative` e `qt6-webengine` em uma única
+versão oficial depois dessa etapa e importa `QWebEngineNotification` antes da
+coleta pelo `quick-sharun`. Assim, uma defasagem temporária do pacote reduzido
+falha no build em vez de produzir um AppImage que encerra no startup.
+
 ## Mapa do repositório
 
 | Caminho | Conteúdo |

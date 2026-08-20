@@ -11,6 +11,14 @@ This mandatory record starts after version 7.4.1. The 7.4.1 entry below is the
 historical baseline; older release summaries remain available in the GitHub
 releases and the AppStream metadata.
 
+## [7.4.6] - In development
+
+### Fixed
+
+- Fixed Linux AppImages failing at startup when a continuously published
+  reduced Qt Base package lagged behind the official Qt QML and WebEngine
+  modules.
+
 ## [7.4.5] - 2026-08-20
 
 ### Added
@@ -105,6 +113,7 @@ releases and the AppStream metadata.
 - Improved reliability when ZapZap is closed by the operating system.
 - Included performance improvements.
 
+[7.4.6]: https://github.com/matheusgodoy8/zapzap/compare/7.4.5...HEAD
 [7.4.5]: https://github.com/matheusgodoy8/zapzap/compare/7.4.4...7.4.5
 [7.4.4]: https://github.com/matheusgodoy8/zapzap/compare/7.4.2...7.4.4
 [7.4.2]: https://github.com/matheusgodoy8/zapzap/compare/7.4.1...7.4.2
