@@ -81,6 +81,10 @@ class WindowsPackagingTest(unittest.TestCase):
         self.assertLess(identity_call, application_creation)
         self.assertIn("SetCurrentProcessExplicitAppUserModelID", source)
         self.assertIn("zapzap.__desktopid__", source)
+        self.assertIn(
+            "app.setApplicationDisplayName(zapzap.__appname__)",
+            source,
+        )
 
     def test_unread_total_updates_application_and_window_icons(self):
         manager = object.__new__(SysTrayManager)

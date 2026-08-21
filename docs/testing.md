@@ -78,8 +78,8 @@ documente o que ele protege.
 | `test_appearance_settings_ui.py` | grupos, dependências, layout responsivo, persistência e acessibilidade |
 | `test_appimage_packaging.py` | restauração coerente de Qt Base/QML/WebEngine após pacotes reduzidos, importação da ABI privada, nome final fornecido ao quick-sharun e ausência de renomeação posterior do AppImage/zsync |
 | `test_attendant_signature.py` | domínio local isolado por `User.id`, seletor de conta, JSON seguro, reinjeção direcionada e contextos Lexical de texto, edição e mídia |
-| `test_browser_account_lifecycle.py` | registro estável, criação lazy de contas desativadas, isolamento/retentativa de perfil com erro, reativação, remoção, notificações e encerramento idempotente |
-| `test_browser_page_button_ui.py` | avatar sem número, grayscale de conta desativada, ponto de estado, card, temas, escala e clique |
+| `test_browser_account_lifecycle.py` | registro estável, criação lazy de contas desativadas, isolamento/retentativa de perfil com erro, reativação, remoção, soma de notificações entre contas e encerramento idempotente |
+| `test_browser_page_button_ui.py` | badge numérico por conta, avatar sem badge quando silenciado/desativado, grayscale, card, escala e clique |
 | `test_check_box.py` | API, variantes, tamanhos, pintura, temas, tri-state, mouse, teclado e acessibilidade do CheckBox |
 | `test_component_typography.py` | pesos de fonte de primitives, menus, combos, atalhos e tabs |
 | `test_debugging_settings_ui.py` | manutenção, relatórios, informações de runtime, cópia e feedback |
@@ -96,6 +96,7 @@ documente o que ele protege.
 | `test_linux_launcher_badge.py` | badge global de não lidas no launcher Linux, payload D-Bus do Plasma, fallback do ícone, limpeza, Qt anterior e isolamento das demais plataformas |
 | `test_memory_benchmark.py` | procfs/USS, schema JSON/CSV/Markdown, isolamento WebEngine, factory stub, cenários e comparação relativa |
 | `test_network_privacy_settings_ui.py` | proxy exclusivamente global, strict proxy, credenciais, aplicar/descartar, feedback de falha do Qt, restauração e WebRTC |
+| `test_notification_account_identity.py` | identificação da conta e contato no título nativo, fallback e preferências de privacidade |
 | `test_notification_sound_setting.py` | mapeamento de som e tipos dos hints Portal/Freedesktop |
 | `test_notification_window_activation.py` | conexão QtDBus, tokens Portal/Wayland, startup X11, foco e limpeza |
 | `test_notifications_settings_ui.py` | rótulos, dependências, privacidade, som e lembrete de apoio |
@@ -142,6 +143,7 @@ documente o que ele protege.
 - `test_linux_launcher_badge.py`
 - `test_memory_benchmark.py`
 - `test_network_privacy_settings_ui.py`
+- `test_notification_account_identity.py`
 - `test_notification_sound_setting.py`
 - `test_notification_window_activation.py`
 - `test_notifications_settings_ui.py`

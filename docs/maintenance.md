@@ -115,6 +115,9 @@ dados reais para testes destrutivos de conta, cache ou configurações.
 - Mantenha o menu de contexto da barra lateral limitado a identidade, edição,
   Não perturbe, desativação e remoção. User-Agent e personalização do avatar
   pertencem ao diálogo transacional de edição.
+- Preserve o badge numérico no avatar de cada conta ativa e não silenciada;
+  desativadas e silenciadas não devem exibir contagem. O badge global deve ser
+  a soma dos runtimes ativos, nunca o valor da última conta atualizada.
 - Não reutilize armazenamento, cache ou scripts entre perfis por conveniência.
 - Capture caminhos antes de destruir o perfil quando for necessário remover
   dados.
@@ -209,7 +212,11 @@ dados reais para testes destrutivos de conta, cache ou configurações.
 - Fechar no WhatsApp deve fechar a notificação nativa; o encerramento retira as
   restantes.
 - Preserve tokens de ativação Portal/Wayland e o caminho X11.
-- Teste pelo menos o backend alterado e as preferências de privacidade/som.
+- Identifique o conteúdo pelo `User.name` salvo para a conta, sem substituir o
+  `User.id` estável usado para ativação. A preferência de privacidade pode
+  ocultar contato e mensagem, mas deve manter a identificação da conta.
+- Teste pelo menos o backend alterado, duas contas com nomes distintos e as
+  preferências de privacidade/som.
 
 ### Mudança visual compartilhada
 
@@ -521,9 +528,11 @@ GitHub, portanto o build ARM64 precisa ser confirmado no Actions antes da
 publicação de cada release. Preserve também o AppUserModelID estável aplicado
 antes do `QApplication` e a opção `--icon` do PyInstaller apontando para o `.ico`
 multirresolução versionado; valide o ícone do executável e da barra de tarefas
-em uma sessão gráfica real do Windows. A mesma validação deve confirmar que a
-contagem global de não lidas adiciona, atualiza e remove o badge numérico da
-barra de tarefas.
+em uma sessão gráfica real do Windows. Preserve também o nome de exibição da
+aplicação e o tooltip do tray como ZapZap; o cabeçalho técnico que o Windows
+decidir mostrar não substitui a identificação da conta no conteúdo. A mesma
+validação deve confirmar que a contagem global de não lidas adiciona, atualiza
+e remove o badge numérico da barra de tarefas.
 
 No Linux, o contador do launcher usa `QGuiApplication.setBadgeNumber()`, a
 identidade definida por `setDesktopFileName()` e um sinal explícito

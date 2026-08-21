@@ -2,19 +2,13 @@
 
 from enum import Enum
 
-from PyQt6.QtCore import QRectF, QSize
+from PyQt6.QtCore import QSize
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import (
-    QColor,
-    QIcon,
-    QPainter,
-    QPalette,
-)
+from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QPushButton
 
 from zapzap.assets.icons.user_icon import UserIcon
 from zapzap.core.config.settings_manager import SettingsManager
-from zapzap.core.theme.theme_manager import ThemeManager
 from zapzap.features.accounts.domain.user import User
 
 
@@ -23,7 +17,7 @@ class AccountIndicatorState(Enum):
 
     Mapping:
     - ACTIVITY: enabled, unmuted account with unread messages
-      -> theme activity teal;
+      -> numeric badge rendered by the account avatar;
     - NONE: no unread activity, muted notifications or disabled account
       -> no indicator.
 
@@ -42,12 +36,6 @@ class BrowserPageButton(QPushButton):
     BUTTON_SIZE = 48
     ICON_SIZE = 34
     BORDER_RADIUS = 12
-    INDICATOR_RATIO = 0.23
-    INDICATOR_BORDER_RATIO = 0.22
-    INDICATOR_CARD_GAP_RATIO = 0.06
-    MIN_INDICATOR_SIZE = 6.0
-    MIN_INDICATOR_BORDER = 1.5
-    MIN_INDICATOR_CARD_GAP = 2.0
     INACTIVE_AVATAR_GRAYSCALE = 1.0
     INACTIVE_AVATAR_OPACITY = 0.82
 
@@ -118,7 +106,6 @@ class BrowserPageButton(QPushButton):
         self.page_index = page_index
         self._number_notifications = 0
         self._is_selected = False
-        self._card_background_role = QPalette.ColorRole.Window
         self._avatar_cache_key = None
         self._avatar_cache_icon = QIcon()
 
@@ -157,16 +144,12 @@ class BrowserPageButton(QPushButton):
 
     def _apply_state_style(self, hovered=False, pressed=False):
         if pressed:
-            self._card_background_role = QPalette.ColorRole.Highlight
             self.setStyleSheet(self.STYLE_PRESSED)
         elif self._is_selected:
-            self._card_background_role = QPalette.ColorRole.AlternateBase
             self.setStyleSheet(self.STYLE_SELECTED)
         elif hovered:
-            self._card_background_role = QPalette.ColorRole.AlternateBase
             self.setStyleSheet(self.STYLE_HOVER)
         else:
-            self._card_background_role = QPalette.ColorRole.Window
             self.setStyleSheet(self.STYLE_NORMAL)
         self.update()
 
@@ -180,7 +163,6 @@ class BrowserPageButton(QPushButton):
             self.update()
             return
 
-        # Quantitative data is deliberately not painted into the avatar.
         self.setIcon(self._account_avatar())
         tooltip = self._build_tooltip()
         self.setToolTip(tooltip)
@@ -203,12 +185,24 @@ class BrowserPageButton(QPushButton):
         )
 
     def _account_avatar(self):
-        """Return the current avatar with only account-state styling applied."""
-        cache_key = (self._user.icon, bool(self._user.enable))
+        """Return the avatar with its unread badge and account-state styling."""
+        notification_count = (
+            self._number_notifications
+            if self._resolve_indicator_state() is AccountIndicatorState.ACTIVITY
+            else 0
+        )
+        cache_key = (
+            self._user.icon,
+            bool(self._user.enable),
+            notification_count,
+        )
         if cache_key == self._avatar_cache_key:
             return self._avatar_cache_icon
 
-        avatar = UserIcon.get_icon(self._user.icon)
+        avatar = UserIcon.get_icon(
+            self._user.icon,
+            qtd=notification_count,
+        )
         if not self._user.enable:
             avatar = self._inactive_avatar(avatar)
 
@@ -224,56 +218,6 @@ class BrowserPageButton(QPushButton):
             intensity=cls.INACTIVE_AVATAR_GRAYSCALE,
             opacity=cls.INACTIVE_AVATAR_OPACITY,
         )
-
-    def indicator_rect(self):
-        """Return the DPI-independent outer indicator geometry."""
-        icon_size = min(self.iconSize().width(), self.iconSize().height())
-        dot_size = max(
-            self.MIN_INDICATOR_SIZE,
-            icon_size * self.INDICATOR_RATIO,
-        )
-        border_width = max(
-            self.MIN_INDICATOR_BORDER,
-            dot_size * self.INDICATOR_BORDER_RATIO,
-        )
-        outer_size = dot_size + (2 * border_width)
-        content = QRectF(self.contentsRect())
-        card_gap = max(
-            self.MIN_INDICATOR_CARD_GAP,
-            min(content.width(), content.height())
-            * self.INDICATOR_CARD_GAP_RATIO,
-        )
-        avatar = QRectF(
-            content.center().x() - (icon_size / 2),
-            content.center().y() - (icon_size / 2),
-            icon_size,
-            icon_size,
-        )
-        radius = outer_size / 2
-        center_x = min(
-            avatar.right(),
-            content.right() - card_gap - radius,
-        )
-        center_y = max(
-            avatar.top(),
-            content.top() + card_gap + radius,
-        )
-        return QRectF(
-            center_x - radius,
-            center_y - radius,
-            outer_size,
-            outer_size,
-        )
-
-    def indicator_color(self):
-        """Return the centralized color for the current real account state."""
-        state = self.indicator_state
-        if state == AccountIndicatorState.ACTIVITY:
-            return QColor(ThemeManager.get_color("activity"))
-        return QColor()
-
-    def _indicator_border_color(self):
-        return self.palette().color(self._card_background_role)
 
     def _build_accessible_description(self):
         descriptions = []
@@ -303,7 +247,7 @@ class BrowserPageButton(QPushButton):
         return tooltip
 
     def update_notifications(self, number_notifications):
-        """Update unread state without adding quantitative text to the avatar."""
+        """Update the unread count rendered on the account avatar."""
         self._number_notifications = number_notifications
         self.update_user_icon()
 
@@ -337,31 +281,3 @@ class BrowserPageButton(QPushButton):
         is_hovered = self.rect().contains(event.position().toPoint())
         self._apply_state_style(hovered=is_hovered)
         super().mouseReleaseEvent(event)
-
-    def paintEvent(self, event):
-        """Paint a non-interactive status dot over the avatar."""
-        super().paintEvent(event)
-        if self.indicator_state == AccountIndicatorState.NONE:
-            return
-
-        outer_rect = self.indicator_rect()
-        dot_size = max(
-            self.MIN_INDICATOR_SIZE,
-            min(self.iconSize().width(), self.iconSize().height())
-            * self.INDICATOR_RATIO,
-        )
-        inner_rect = QRectF(
-            outer_rect.center().x() - (dot_size / 2),
-            outer_rect.center().y() - (dot_size / 2),
-            dot_size,
-            dot_size,
-        )
-
-        painter = QPainter(self)
-        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        painter.setPen(Qt.PenStyle.NoPen)
-        painter.setBrush(self._indicator_border_color())
-        painter.drawEllipse(outer_rect)
-        painter.setBrush(self.indicator_color())
-        painter.drawEllipse(inner_rect)
-        painter.end()

@@ -9,8 +9,6 @@ import logging
 from PyQt6.QtWebEngineCore import QWebEngineNotification
 
 from zapzap.core.config.settings_manager import SettingsManager
-from zapzap import __appname__
-
 from zapzap.features.notifications.portal_notification_backend import (
     PortalNotificationBackend
 )
@@ -26,6 +24,27 @@ if TYPE_CHECKING:
 
 def is_flatpak() -> bool:
     return Path("/.flatpak-info").exists()
+
+
+def account_label(page: WebView) -> str:
+    """Return the user-facing account name used to identify notifications."""
+    name = getattr(getattr(page, "user", None), "name", "")
+    if isinstance(name, str) and name.strip():
+        return name.strip()
+
+    page_index = getattr(page, "page_index", None)
+    if page_index is not None:
+        return _("Account {}").format(page_index)
+    return _("Account")
+
+
+def notification_title(page: WebView, contact_name: str = "") -> str:
+    """Combine the stable account label with the optional sender name."""
+    account = account_label(page)
+    contact = contact_name.strip() if isinstance(contact_name, str) else ""
+    if contact and contact != account:
+        return f"{account} · {contact}"
+    return account
 
 
 class NotificationService:
@@ -103,11 +122,12 @@ class NotificationService:
         # =================================================
         # 2. Conteúdo (decisão global)
         # =================================================
-        title = (
+        contact_name = (
             notification.title()
             if SettingsManager.get("notification/show_name", True)
-            else __appname__
+            else ""
         )
+        title = notification_title(page, contact_name)
 
         message = (
             notification.message()

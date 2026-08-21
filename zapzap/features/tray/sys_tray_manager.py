@@ -38,6 +38,7 @@ class SysTrayManager:
         self._settings = AppearanceSettings()
         self.number_notifications = 0
         self._tray = QSystemTrayIcon()
+        self._tray.setToolTip(zapzap.__appname__)
         self.current_icon = TrayIcon.Type(self._settings.tray_theme)
         self._set_icon(self.current_icon)
 

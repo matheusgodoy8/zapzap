@@ -319,6 +319,26 @@ class BrowserAccountLifecycleTest(QtTestCase):
 
         set_total.assert_called_with(3)
 
+    def test_total_notifications_sums_two_active_accounts(self):
+        first = self._add(self._user("first", True))
+        second = self._add(self._user("second", True))
+        self.controller._update_total_notifications = (
+            lambda: BrowserController._update_total_notifications(
+                self.controller
+            )
+        )
+
+        with patch(
+            "zapzap.features.browser.shell.browser_controller."
+            "SysTrayManager.set_number_notifications"
+        ) as set_total:
+            first.page.update_button_signal.emit(first.position, 3)
+            second.page.update_button_signal.emit(second.position, 5)
+
+        self.assertEqual(first.button.number_notifications, 3)
+        self.assertEqual(second.button.number_notifications, 5)
+        set_total.assert_called_with(8)
+
     def test_deleting_current_account_selects_the_next_enabled_account(self):
         current = self._add(self._user("current", True))
         remaining = self._add(self._user("remaining", True))

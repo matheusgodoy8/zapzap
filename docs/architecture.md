@@ -119,11 +119,13 @@ nula, uma nova ativação tenta construí-la novamente; desativar a conta conver
 o estado para `DISABLED` normalmente.
 
 Na barra lateral, o contorno do card identifica a conta selecionada e o avatar
-não contém texto quantitativo. Um ponto verde-azulado indica não lidos e um
-avatar em escala de cinza identifica uma conta explicitamente desativada.
-Contas desativadas ou silenciadas não exibem ponto; sem atividade especial,
-também não há indicador. Carregamento, falha de conexão e validade da sessão
-não são inferidos, pois o `WebView` ainda não os propaga ao botão da conta.
+exibe um badge numérico com as não lidas daquela conta. Um avatar em escala de
+cinza identifica uma conta explicitamente desativada. Contas desativadas ou
+silenciadas não exibem o badge; sem atividade especial, também não há
+indicador. O `BrowserController` soma os contadores somente dos runtimes ativos
+e publica o total no tray e nos badges do sistema. Carregamento, falha de
+conexão e validade da sessão não são inferidos, pois o `WebView` ainda não os
+propaga ao botão da conta.
 Nos builds oficiais de download manual, uma release estável mais recente torna
 visível um botão de atualização 40 × 40, somente com ícone, na parte inferior
 da sidebar. Hover ou foco mostram
@@ -335,6 +337,14 @@ seleciona um backend:
 | Linux fora do Flatpak | `org.freedesktop.Notifications` |
 | Windows | backend Windows |
 | macOS | backend macOS |
+
+O título de conteúdo começa pelo nome da conta persistido em `User.name` e,
+quando permitido pela preferência de privacidade, acrescenta o nome do contato.
+Assim, duas contas permanecem distinguíveis em todos os backends sem trocar o
+`User.id` estável usado para ativação. Um nome de conta vazio recebe um fallback
+baseado na posição visual apenas para apresentação. O nome de exibição do
+aplicativo e o tooltip do tray são definidos como ZapZap; shells podem continuar
+mostrando sua identidade técnica em uma área controlada pelo sistema.
 
 As integrações D-Bus usam exclusivamente `PyQt6.QtDBus`: o backend Portal e o
 backend Freedesktop compartilham o event loop do Qt e não dependem de

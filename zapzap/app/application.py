@@ -101,6 +101,7 @@ def main():
     app = SingleApplication(
         zapzap.__appid__, sys.argv + SetupManager.get_argv())
     app.setApplicationName(zapzap.__appname__)
+    app.setApplicationDisplayName(zapzap.__appname__)
     app.setApplicationVersion(zapzap.__version__)
     app.setDesktopFileName(zapzap.__desktopid__)
     app.setOrganizationDomain(zapzap.__domain__)

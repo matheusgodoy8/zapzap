@@ -18,6 +18,10 @@ releases and the AppStream metadata.
 - Fixed unread-message badges not appearing in KDE Plasma by publishing the
   launcher update through Plasma's supported D-Bus protocol and retaining a
   dynamic window-icon fallback.
+- Restored the numeric unread-message badge on each active account avatar and
+  kept the desktop badge synchronized with the sum from multiple accounts.
+- Identified native notifications with the account name saved by the user,
+  before the contact name, and exposed ZapZap's display name to desktop shells.
 
 ## [7.4.6] - 2026-08-20
 
