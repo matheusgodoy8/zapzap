@@ -117,6 +117,42 @@ class WindowsPackagingTest(unittest.TestCase):
             [call(icon), call(icon)],
         )
 
+    def test_unread_total_publishes_and_clears_native_taskbar_overlay(self):
+        manager = object.__new__(SysTrayManager)
+        manager._bound_window = Mock()
+        app = Mock()
+        icon = object()
+
+        with (
+            patch(
+                "zapzap.features.tray.sys_tray_manager.IS_WINDOWS",
+                True,
+            ),
+            patch(
+                "zapzap.features.tray.sys_tray_manager.QApplication.instance",
+                return_value=app,
+            ),
+            patch(
+                "zapzap.features.tray.sys_tray_manager."
+                "publish_windows_taskbar_badge",
+            ) as publish_badge,
+            patch(
+                "zapzap.features.tray.sys_tray_manager."
+                "TrayIcon.getTaskbarIcon",
+                return_value=icon,
+            ),
+        ):
+            manager._set_taskbar_icon(7)
+            manager._set_taskbar_icon(0)
+
+        self.assertEqual(
+            publish_badge.call_args_list,
+            [
+                call(manager._bound_window, 7),
+                call(manager._bound_window, 0),
+            ],
+        )
+
     def test_unread_total_does_not_change_non_windows_window_icon(self):
         manager = object.__new__(SysTrayManager)
         manager._bound_window = Mock()

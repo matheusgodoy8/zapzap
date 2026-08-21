@@ -531,8 +531,12 @@ multirresolução versionado; valide o ícone do executável e da barra de taref
 em uma sessão gráfica real do Windows. Preserve também o nome de exibição da
 aplicação e o tooltip do tray como ZapZap; o cabeçalho técnico que o Windows
 decidir mostrar não substitui a identificação da conta no conteúdo. A mesma
-validação deve confirmar que a contagem global de não lidas adiciona, atualiza
-e remove o badge numérico da barra de tarefas.
+validação deve confirmar que a contagem global de não lidas chama
+`ITaskbarList3.SetOverlayIcon` com o `HWND` da janela, adiciona e atualiza um
+`HICON` numérico e envia `NULL` para remover o badge. Libere o `HICON` depois da
+chamada, pois o shell mantém sua própria cópia; falhas COM não podem interromper
+o aplicativo. Não trate apenas `QApplication.setWindowIcon()` ou
+`QWidget.setWindowIcon()` como prova do overlay nativo.
 
 No Linux, o contador do launcher usa `QGuiApplication.setBadgeNumber()`, a
 identidade definida por `setDesktopFileName()` e um sinal explícito

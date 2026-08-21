@@ -481,9 +481,13 @@ arquitetura no nome final do artefato. O bootstrap registra
 `com.rtosta.zapzap` como AppUserModelID antes de criar o `QApplication`, e o
 PyInstaller incorpora o `.ico` multirresolução mantido em `share/icons`; os dois
 identificam corretamente a janela e o executável na barra de tarefas do Windows.
-A contagem global de mensagens não lidas que alimenta a bandeja também recompõe
-o ícone da aplicação no Windows com um badge numérico. No Linux, a mesma
-contagem é enviada a `QGuiApplication.setBadgeNumber()` e, explicitamente, ao
+A contagem global de mensagens não lidas que alimenta a bandeja também é
+publicada no Windows por `ITaskbarList3.SetOverlayIcon`, usando o `HWND` da
+janela vinculada, um `HICON` numérico pequeno e descrição acessível; zero envia
+um ícone nulo e remove o overlay. A recomposição do ícone Qt permanece como
+fallback e para a identidade visual da janela, mas não substitui a API nativa
+do botão da barra de tarefas. No Linux, a mesma contagem é enviada a
+`QGuiApplication.setBadgeNumber()` e, explicitamente, ao
 sinal D-Bus `com.canonical.Unity.LauncherEntry.Update` consumido pelo Task
 Manager do Plasma. Os dois caminhos usam o launcher
 `application://com.rtosta.zapzap.desktop`; o valor zero remove o badge. O ícone

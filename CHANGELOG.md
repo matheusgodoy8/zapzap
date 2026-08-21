@@ -22,6 +22,8 @@ releases and the AppStream metadata.
   kept the desktop badge synchronized with the sum from multiple accounts.
 - Identified native notifications with the account name saved by the user,
   before the contact name, and exposed ZapZap's display name to desktop shells.
+- Fixed the global unread count missing from the Windows taskbar by publishing
+  a native numeric overlay instead of relying only on Qt window-icon changes.
 
 ## [7.4.6] - 2026-08-20
 

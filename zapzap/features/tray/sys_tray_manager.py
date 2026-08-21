@@ -7,6 +7,9 @@ import zapzap
 from zapzap.assets.icons.tray_icon import TrayIcon
 from zapzap.core.config.settings.appearance import AppearanceSettings
 from zapzap.core.platform import IS_LINUX, IS_WINDOWS
+from zapzap.features.tray.windows_taskbar_badge import (
+    publish_windows_taskbar_badge,
+)
 
 
 class SysTrayManager:
@@ -133,6 +136,7 @@ class SysTrayManager:
         window = getattr(self, "_bound_window", None)
         if window is not None:
             window.setWindowIcon(icon)
+            publish_windows_taskbar_badge(window, number_notifications)
 
     def _set_linux_launcher_badge(self, number_notifications):
         """Show the total unread count on supported Linux taskbars."""

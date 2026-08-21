@@ -117,6 +117,7 @@ documente o que ele protege.
 | `test_whatsapp_app_lock.py` | botão acessível da sidebar, conta ativa, foco, sequência Qt nativa e estados transitórios do WebView |
 | `test_window_state_restore.py` | ciclo de vida compartilhado, restauração normal, maximizada e fullscreen e destruição segura do host CSR |
 | `test_windows_packaging.py` | matriz nativa x86_64/ARM64, arquitetura do Python, nomes dos executáveis, AppUserModelID, ícone incorporado e badge de não lidas no Windows |
+| `test_windows_taskbar_badge.py` | overlay numérico nativo, limpeza, conversão Qt para HICON, recursos e falhas seguras no Windows |
 
 <!-- structure-check:tests:start -->
 - `test_about_settings_ui.py`
@@ -164,6 +165,7 @@ documente o que ele protege.
 - `test_whatsapp_app_lock.py`
 - `test_window_state_restore.py`
 - `test_windows_packaging.py`
+- `test_windows_taskbar_badge.py`
 <!-- structure-check:tests:end -->
 
 ## Como escrever um teste

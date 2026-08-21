@@ -101,6 +101,45 @@ class TrayIcon:
         return icon
 
     @staticmethod
+    def getTaskbarOverlayIcon(qtd=0) -> QIcon:
+        """Build the compact numeric overlay consumed by the Windows shell."""
+        try:
+            qtd = max(0, min(int(qtd), 999))
+        except (TypeError, ValueError):
+            qtd = 0
+
+        icon = QIcon()
+        if qtd == 0:
+            return icon
+
+        label = str(qtd)
+        for size in (16, 20, 24, 32):
+            pixmap = QPixmap(size, size)
+            pixmap.fill(Qt.GlobalColor.transparent)
+            badge = QRectF(
+                size * 0.02,
+                size * 0.08,
+                size * 0.96,
+                size * 0.84,
+            )
+            painter = QPainter(pixmap)
+            painter.setRenderHints(
+                QPainter.RenderHint.Antialiasing
+                | QPainter.RenderHint.TextAntialiasing
+            )
+            painter.setPen(Qt.PenStyle.NoPen)
+            painter.setBrush(QColor("#e01b24"))
+            painter.drawRoundedRect(
+                badge,
+                badge.height() / 2,
+                badge.height() / 2,
+            )
+            TrayIcon._paint_badge_digits(painter, badge, label)
+            painter.end()
+            icon.addPixmap(pixmap)
+        return icon
+
+    @staticmethod
     def _paint_taskbar_badge(pixmap: QPixmap, label: str) -> None:
         size = pixmap.width()
         badge_height = size * 0.42
