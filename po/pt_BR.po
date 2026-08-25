@@ -3231,6 +3231,30 @@ msgstr "Selecionar tudo"
 msgid "Save image"
 msgstr "Salvar imagem"
 
+#: zapzap/features/browser/web/web_view.py
+msgid "This video could not be played."
+msgstr "Não foi possível reproduzir este vídeo."
+
+#: zapzap/features/browser/web/web_view.py
+msgid "Save video"
+msgstr "Salvar vídeo"
+
+#: zapzap/features/browser/web/web_view.py
+msgid "Open video"
+msgstr "Abrir vídeo"
+
+#: zapzap/features/browser/web/web_view.py
+msgid "ZapZap could not retrieve this video. Try the WhatsApp download button."
+msgstr "O ZapZap não conseguiu obter este vídeo. Tente usar o botão de download do WhatsApp."
+
+#: zapzap/features/downloads/download_manager.py
+msgid "Unable to open video"
+msgstr "Não foi possível abrir o vídeo"
+
+#: zapzap/features/downloads/download_manager.py
+msgid "ZapZap could not open this video in the system player. Use the WhatsApp download button and open the downloaded file manually."
+msgstr "O ZapZap não conseguiu abrir este vídeo no reprodutor do sistema. Use o botão de download do WhatsApp e abra o arquivo baixado manualmente."
+
 #: zapzap/features/browser/web/web_view.py:371
 msgid "Copy image"
 msgstr "Copiar imagem"
@@ -4547,3 +4571,121 @@ msgstr "Usa apenas o nome do atendente como legenda da mídia."
 #: zapzap/features/settings/pages/attendant_signature/view.py:35
 msgid "Choose which ZapZap account to configure."
 msgstr "Escolha qual conta do ZapZap configurar."
+
+#: zapzap/features/browser/web/quick_messages.py:29
+#: zapzap/features/settings/pages/quick_messages/view.py:120
+#: zapzap/features/settings/pages/quick_messages/view.py:216
+#: zapzap/features/settings/shell/settings_controller.py:179
+msgid "Quick messages"
+msgstr "Mensagens rápidas"
+
+#: zapzap/features/browser/web/quick_messages.py:31
+#: zapzap/features/settings/pages/quick_messages/view.py:229
+msgid "Search messages…"
+msgstr "Pesquisar mensagens…"
+
+#: zapzap/features/browser/web/quick_messages.py:32
+#: zapzap/features/settings/pages/quick_messages/view.py:238
+msgid "No quick messages configured."
+msgstr "Nenhuma mensagem rápida cadastrada."
+
+#: zapzap/features/browser/web/quick_messages.py:33
+msgid "Add messages in Settings > Quick messages."
+msgstr "Cadastre mensagens em Ajustes > Mensagens rápidas."
+
+#: zapzap/features/settings/pages/quick_messages/view.py:29
+msgid "Edit quick message"
+msgstr "Editar mensagem rápida"
+
+#: zapzap/features/settings/pages/quick_messages/view.py:29
+#: zapzap/features/settings/pages/quick_messages/view.py:232
+msgid "Add quick message"
+msgstr "Adicionar mensagem rápida"
+
+#: zapzap/features/settings/pages/quick_messages/view.py:41
+msgid "Message name"
+msgstr "Nome da mensagem"
+
+#: zapzap/features/settings/pages/quick_messages/view.py:43
+msgid "Example: Quote"
+msgstr "Exemplo: Orçamento"
+
+#: zapzap/features/settings/pages/quick_messages/view.py:48
+msgid "Message"
+msgstr "Mensagem"
+
+#: zapzap/features/settings/pages/quick_messages/view.py:50
+msgid "Enter the content…"
+msgstr "Digite o conteúdo…"
+
+#: zapzap/features/settings/pages/quick_messages/view.py:55
+msgid "Available for"
+msgstr "Disponível para"
+
+#: zapzap/features/settings/pages/quick_messages/view.py:58
+msgid "Make this message available in every account."
+msgstr "Disponibiliza esta mensagem em todas as contas."
+
+#: zapzap/features/settings/pages/quick_messages/view.py:77
+msgid "Activated"
+msgstr "Ativada"
+
+#: zapzap/features/settings/pages/quick_messages/view.py:79
+msgid "Status"
+msgstr "Status"
+
+#: zapzap/features/settings/pages/quick_messages/view.py:97
+msgid "Deactivated"
+msgstr "Desativada"
+
+#: zapzap/features/settings/pages/quick_messages/view.py:121
+msgid "Enter a name and message content before saving."
+msgstr "Informe um nome e o conteúdo da mensagem antes de salvar."
+
+#: zapzap/features/settings/pages/quick_messages/view.py:131
+msgid "Select at least one account or choose All accounts."
+msgstr "Selecione pelo menos uma conta ou escolha Todas as contas."
+
+#: zapzap/features/settings/pages/quick_messages/view.py:174
+msgid "Activate {}"
+msgstr "Ativar {}"
+
+#: zapzap/features/settings/pages/quick_messages/view.py:187
+msgid "Accounts: {}"
+msgstr "Contas: {}"
+
+#: zapzap/features/settings/pages/quick_messages/view.py:200
+msgid "Edit {}"
+msgstr "Editar {}"
+
+#: zapzap/features/settings/pages/quick_messages/view.py:201
+msgid "Remove {}"
+msgstr "Remover {}"
+
+#: zapzap/features/settings/pages/quick_messages/view.py:217
+msgid "Create reusable messages and choose which accounts can use them."
+msgstr "Crie mensagens reutilizáveis e escolha quais contas podem usá-las."
+
+#: zapzap/features/settings/pages/quick_messages/view.py:230
+msgid "Search quick messages"
+msgstr "Pesquisar mensagens rápidas"
+
+#: zapzap/features/settings/pages/quick_messages/view.py:231
+msgid "Add message"
+msgstr "Adicionar mensagem"
+
+#: zapzap/features/settings/pages/quick_messages/view.py:259
+msgid "No messages match your search."
+msgstr "Nenhuma mensagem corresponde à pesquisa."
+
+#: zapzap/features/settings/pages/quick_messages/controller.py:84
+msgid "Remove quick message?"
+msgstr "Remover mensagem rápida?"
+
+#: zapzap/features/settings/pages/quick_messages/controller.py:85
+msgid "The message “{}” will be deleted."
+msgstr "A mensagem “{}” será excluída."
+
+#: zapzap/features/settings/pages/quick_messages/controller.py:86
+msgid "This action cannot be undone."
+msgstr "Esta ação não pode ser desfeita."

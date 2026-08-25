@@ -2,6 +2,7 @@ import re
 import shutil
 import os
 import logging
+import json
 
 from PyQt6.QtWebChannel import QWebChannel
 from PyQt6.QtWebEngineWidgets import QWebEngineView
@@ -177,6 +178,7 @@ class WebView(QWebEngineView):
         )
 
         self._install_ctrl_arrow_visual_navigation_fix()
+        self._install_video_playback_fallback()
 
         # Instala o handler de crash específico para este WebView
         crash_handler.register_profile(self.profile)
@@ -201,6 +203,47 @@ class WebView(QWebEngineView):
                 self.profile.scripts().insert(script)
             except Exception as e:
                 print(f"Error injecting ctrl_arrow_visual_navigation_fix: {e}")
+
+    def _install_video_playback_fallback(self):
+        """Offer safe alternatives when Chromium cannot decode a video."""
+        try:
+            base_dir = os.path.dirname(__file__)
+            js_path = os.path.join(
+                base_dir,
+                "scripts",
+                "video_playback_fallback.js",
+            )
+            with open(js_path, "r", encoding="utf-8") as file:
+                js_code = file.read()
+
+            placeholders = {
+                "__ZAPZAP_VIDEO_MESSAGE__": json.dumps(
+                    _("This video could not be played.")
+                ),
+                "__ZAPZAP_VIDEO_SAVE__": json.dumps(_("Save video")),
+                "__ZAPZAP_VIDEO_OPEN__": json.dumps(_("Open video")),
+                "__ZAPZAP_VIDEO_FETCH_ERROR__": json.dumps(
+                    _(
+                        "ZapZap could not retrieve this video. Try the "
+                        "WhatsApp download button."
+                    )
+                ),
+                "__ZAPZAP_VIDEO_CLOSE__": json.dumps(_("Close")),
+            }
+            for placeholder, value in placeholders.items():
+                js_code = js_code.replace(placeholder, value)
+
+            script = QWebEngineScript()
+            script.setName("zapzap_video_playback_fallback")
+            script.setInjectionPoint(
+                QWebEngineScript.InjectionPoint.DocumentCreation
+            )
+            script.setRunsOnSubFrames(False)
+            script.setSourceCode(js_code)
+            script.setWorldId(QWebEngineScript.ScriptWorldId.MainWorld)
+            self.profile.scripts().insert(script)
+        except Exception:
+            logger.exception("Failed to install the video playback fallback")
 
     def _inject_webrtc_shield(self):
         """Inject the legacy page-level WebRTC candidate obfuscation shim.
@@ -508,6 +551,10 @@ class WebView(QWebEngineView):
     def apply_attendant_signature_settings(self):
         if self.user.enable and self.whatsapp_page:
             self.whatsapp_page.apply_attendant_signature_settings()
+
+    def apply_quick_messages_settings(self):
+        if self.user.enable and self.whatsapp_page:
+            self.whatsapp_page.apply_quick_messages_settings()
 
     def close_conversation(self):
         """Simula o pressionamento da tecla 'Escape' na página."""

@@ -68,6 +68,7 @@ packages = [
   "zapzap.features.settings.pages.notifications",
   "zapzap.features.settings.pages.performance_experimental",
   "zapzap.features.settings.pages.permissions",
+  "zapzap.features.settings.pages.quick_messages",
   "zapzap.features.settings.pages.system_startup",
   "zapzap.features.alerts",
   "zapzap.features.customizations",

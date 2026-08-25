@@ -104,12 +104,13 @@ documente o que ele protege.
 | `test_permissions_settings_ui.py` | grupos e ações globais/individuais de permissões |
 | `test_portal_notification_backend.py` | ciclo de vida, falhas, ações e token no backend Portal |
 | `test_qt_parameter_fallbacks.py` | escala, tema da bandeja, geometria, tipos e fail-closed do proxy global, zoom e download inválidos com autocura ou fallback restrito |
+| `test_quick_messages.py` | fallback e CRUD JSON, escopo por conta, conteúdo multilinha, payload seguro, runtime Lexical idempotente, pesquisa e acessibilidade da página |
 | `test_segmented_control.py` | seleção exclusiva, sinais, mouse, teclado, acessibilidade, tamanhos, raios e temas |
 | `test_send_message_to_number.py` | normalização/URL, lista de países, validação, acessibilidade e teclado do diálogo de conversa por número |
 | `test_settings_card.py` | divisores e grupos do card compartilhado em `ui.components` |
 | `test_settings_lazy_loading.py` | subprocessos de importação, registro e instanciação lazy, singleton por painel, diagnóstico, empacotamento, APIs públicas e fechamento de Configurações |
 | `test_settings_radio_group.py` | divisores do grupo de rádio em `ui.components` |
-| `test_software_video_decoding.py` | flags Chromium de vídeo/strict proxy, persistência, compatibilidade e ordem do bootstrap |
+| `test_software_video_decoding.py` | flags Chromium de vídeo/strict proxy, persistência, ordem do bootstrap e fallback restrito a blobs de vídeo ou `/stream/video` incompatível após ação explícita |
 | `test_spellcheck_language_picker.py` | migração, seleção múltipla transacional, pesquisa, limite, recentes, menu e perfis WebEngine |
 | `test_system_startup_settings_ui.py` | semântica de fechamento, diálogo nativo e acessibilidade |
 | `test_unix_signal_shutdown.py` | ponte POSIX, restauração do estado global e `SIGTERM` real chegando a `aboutToQuit` em subprocesso isolado |
@@ -152,6 +153,7 @@ documente o que ele protege.
 - `test_permissions_settings_ui.py`
 - `test_portal_notification_backend.py`
 - `test_qt_parameter_fallbacks.py`
+- `test_quick_messages.py`
 - `test_segmented_control.py`
 - `test_send_message_to_number.py`
 - `test_settings_card.py`

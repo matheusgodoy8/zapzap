@@ -175,6 +175,12 @@ class SettingsController(SettingsView):
                 "AttendantSignatureSettingsController",
             ),
             SettingsPageDescriptor(
+                "quick_messages",
+                _("Quick messages"),
+                "zapzap.features.settings.pages.quick_messages.controller",
+                "QuickMessagesSettingsController",
+            ),
+            SettingsPageDescriptor(
                 "performance_experimental",
                 _("Performance experimental"),
                 "zapzap.features.settings.pages.performance_experimental.controller",

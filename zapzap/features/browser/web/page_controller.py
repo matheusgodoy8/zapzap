@@ -19,6 +19,10 @@ from zapzap.features.browser.web.attendant_signature import (
     build_configuration_script,
     build_initialization_script,
 )
+from zapzap.features.browser.web.quick_messages import (
+    build_configuration_script as build_quick_messages_configuration_script,
+    build_initialization_script as build_quick_messages_initialization_script,
+)
 from zapzap.ui.typography import Typography
 
 import urllib.parse  # Para normalizar URLs
@@ -288,6 +292,7 @@ class PageController(QWebEnginePage):
         """Ações realizadas após o carregamento da página."""
         if success:
             self.initialize_attendant_signature()
+            self.initialize_quick_messages()
 
             # Injeta os addons
             AddonsManager.inject_addons(self)
@@ -323,6 +328,25 @@ class PageController(QWebEnginePage):
                 self.user_id,
                 debug=logger.isEnabledFor(logging.DEBUG),
             )
+        )
+
+    def initialize_quick_messages(self):
+        """Install the account-scoped quick-messages runtime."""
+        if self.user_id is None:
+            logger.warning(
+                "Cannot initialize quick messages without an account ID"
+            )
+            return
+        self.runJavaScript(
+            build_quick_messages_initialization_script(self.user_id)
+        )
+
+    def apply_quick_messages_settings(self):
+        """Refresh account-scoped templates without reloading WhatsApp Web."""
+        if self.user_id is None:
+            return
+        self.runJavaScript(
+            build_quick_messages_configuration_script(self.user_id)
         )
 
     def apply_customizations(self):

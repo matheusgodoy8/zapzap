@@ -159,6 +159,18 @@ WhatsApp. Scripts mantidos em `features/browser/web/scripts/` são ativos em
 tempo de execução e devem ser considerados pelo teste de código estático mesmo
 quando chamam identificadores Python indiretamente.
 
+O fallback de reprodução observa somente falhas de decodificação de
+`HTMLVideoElement`. Para `Blob`s já descriptografados, ele continua sendo armado
+por um clique explícito no download e confirma a incompatibilidade em um elemento
+transitório. Para a rota autenticada `web.whatsapp.com/stream/video`, uma faixa
+aparece apenas depois dos erros de mídia 3 ou 4; o conteúdo só é buscado com as
+credenciais da página quando o usuário escolhe `Abrir vídeo`. Nos dois caminhos,
+uma URL `Blob` de vídeo e um nome reservado encaminham o arquivo ao
+`DownloadManager`, que valida origem, MIME e marcador antes de usar um diretório
+temporário e abrir o reprodutor do sistema. Imagens, GIFs, stickers, áudios,
+documentos, falhas de rede, uploads, downloads normais e mídias reproduzíveis
+permanecem no fluxo original.
+
 O proxy é único e global ao processo. Somente as chaves `proxy/*` alimentam
 `ProxyManager`; trocar, ativar ou exibir uma conta não consulta nem reaplica
 proxy. As chaves históricas `<user_id>/proxy/*` não são migradas nem lidas, para
@@ -315,6 +327,22 @@ exclusivamente o editor Lexical originado pelo evento e distingue composer
 normal, edição e legenda de mídia sem consultar globalmente o composer.
 JavaScript personalizado permanece um mecanismo independente e é aplicado
 depois do runtime nativo.
+
+Mensagens rápidas usam `QuickMessagesSettings` e a chave JSON
+`quick_messages/items` no mesmo `QSettings`. Cada item mantém ID próprio,
+título, conteúdo multilinha, estado, timestamps, ordem futura e uma lista de
+IDs persistidos de conta; lista vazia significa todas as contas. A página lazy
+`quick_messages` faz o CRUD e atualiza todas as `WebView`s ativas, mas cada
+`PageController` serializa para o MainWorld apenas as mensagens ativas que
+pertencem ao seu `user_id`. O runtime interno `web/scripts/quick_messages.js`
+mantém um único botão identificado por `data-zapzap-quick-messages` próximo ao
+composer. Ele localiza semanticamente a ação nativa de anexos, sobe até a linha
+flexível horizontal que também contém o editor e adiciona o botão como sibling
+do slot da ação, sem estilizar ou mover elementos do WhatsApp. O popup oferece
+pesquisa local e insere pelo comando controlado do Lexical sem disparar envio.
+Antes da inserção ele solicita ao runtime nativo de
+identificação que prepare o composer, preservando a regra de assinatura sem
+duplicá-la.
 
 Ao criar uma página:
 
@@ -579,6 +607,7 @@ Este bloco é verificado automaticamente contra
 - `zapzap.features.settings.pages.notifications`
 - `zapzap.features.settings.pages.performance_experimental`
 - `zapzap.features.settings.pages.permissions`
+- `zapzap.features.settings.pages.quick_messages`
 - `zapzap.features.settings.pages.system_startup`
 - `zapzap.features.settings.shell`
 - `zapzap.features.shortcuts`

@@ -432,6 +432,16 @@
 
     window[RUNTIME_NAME] = {
         configure,
+        prepareComposer(element) {
+            if (!config.enabled || !element) {
+                return false;
+            }
+            const editor = getLexicalEditor(element);
+            if (getEditorContext(element) !== CONTEXT.NORMAL_COMPOSER) {
+                return false;
+            }
+            return handleNormalComposer(editor, element);
+        },
         destroy() {
             removeListeners();
             delete window[RUNTIME_NAME];

@@ -148,6 +148,15 @@ dados reais para testes destrutivos de conta, cache ou configurações.
 - Mantenha `performance/js_memory_limit_index` como fonte atual e sincronize
   `performance/js_memory_limit_mb` para compatibilidade. A preferência de
   cookies persistentes deve chegar a `setPersistentCookiesPolicy()`.
+- No fallback de vídeo incompatível, aceite somente erros 3 ou 4 de um
+  `HTMLVideoElement`. Preserve a captura de `Blob`s com MIME de vídeo após clique
+  explícito no download e restrinja a busca direta à origem
+  `https://web.whatsapp.com` e ao caminho exato `/stream/video`. Essa busca usa
+  as credenciais da página e só começa depois do clique em `Abrir vídeo`. A
+  abertura externa deve continuar exigindo nome reservado, MIME de vídeo e
+  origem `Blob` esperada no `DownloadManager`; não envie bytes pelo WebChannel
+  nem intercepte imagens, GIFs, stickers, áudios, documentos, downloads normais,
+  uploads, pré-carregamentos ou falhas transitórias de rede.
 
 ### Identificação do atendente
 
@@ -172,6 +181,27 @@ dados reais para testes destrutivos de conta, cache ou configurações.
   ambos os estados, composer principal vazio e nomes com acentos e aspas. Em
   instalações com múltiplas contas, valide também valores diferentes por conta,
   alternância do seletor e ausência de assinatura cruzada.
+
+### Mensagens rápidas
+
+- Preserve `quick_messages/items` como JSON no `QSettings`; a chave ausente ou
+  inválida deve produzir lista vazia sem alterar preferências antigas. IDs da
+  mensagem e IDs persistidos de `User` não podem ser substituídos por rótulos
+  traduzidos. A lista `accounts` vazia significa disponibilidade global.
+- Transporte somente mensagens ativas e pertencentes à conta da `WebView`, por
+  JSON serializado no Python. Não envie automaticamente, não altere
+  `innerHTML`/`textContent` do composer e preserve conteúdo já digitado.
+- Mantenha um único botão e um único `MutationObserver`, identificados por
+  atributos `data-zapzap-*`; observe a raiz `#app` apenas para recolocar o
+  botão após rerenders e não processe mutações quando o composer não mudou.
+- Resolva o controle semântico de anexos até a linha horizontal `display:flex`
+  que também contém o editor e insira o botão como sibling do slot nativo. Não
+  o acrescente dentro do wrapper individual do controle de anexos e não altere
+  estilos, classes ou posição de elementos pertencentes ao WhatsApp.
+- Insira pelo `CONTROLLED_TEXT_INSERTION_COMMAND` do Lexical e passe pela API
+  `prepareComposer` da identificação do atendente. Valide em sessão gráfica
+  real cursor, múltiplas linhas, troca de conversa/conta, claro/escuro e
+  alterações do DOM remoto do WhatsApp Web.
 
 ### Proxy global e isolamento estrito
 

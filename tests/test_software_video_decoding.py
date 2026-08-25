@@ -3,7 +3,10 @@
 import ast
 import os
 from pathlib import Path
+import shutil
+import subprocess
 import tempfile
+import textwrap
 import unittest
 from unittest.mock import PropertyMock, patch
 
@@ -19,6 +22,294 @@ from zapzap.core.environment.setup_manager import (
 
 
 VIDEO_DECODE_FLAG = "--disable-accelerated-video-decode"
+
+
+class VideoPlaybackFallbackScriptTests(unittest.TestCase):
+
+    def test_runtime_keeps_failed_video_available_for_both_actions(self):
+        node = shutil.which("node")
+        if node is None:
+            self.skipTest("Node.js is unavailable")
+
+        script_path = (
+            Path(__file__).resolve().parents[1]
+            / "zapzap/features/browser/web/scripts/video_playback_fallback.js"
+        )
+        harness = textwrap.dedent(
+            r"""
+            const fs = require("fs");
+            const vm = require("vm");
+            const assert = require("assert");
+
+            (async () => {
+
+            class FakeBlob {
+                constructor(type) {
+                    this.type = type;
+                    this.size = 16;
+                }
+                slice(_start, _end, type) {
+                    return new FakeBlob(type);
+                }
+            }
+            class FakeElement {
+                constructor(tagName = "div") {
+                    this.tagName = tagName;
+                    this.children = [];
+                    this.dataset = {};
+                    this.style = {};
+                    this.listeners = {};
+                    this.parentElement = null;
+                    this.attributes = {};
+                }
+                appendChild(child) {
+                    this.children.push(child);
+                    child.parentElement = this;
+                    return child;
+                }
+                append(...children) {
+                    children.forEach((child) => this.appendChild(child));
+                }
+                addEventListener(name, callback) {
+                    this.listeners[name] = callback;
+                }
+                setAttribute(name, value) {
+                    this.attributes[name] = value;
+                }
+                getAttribute(name) {
+                    return this.attributes[name] || null;
+                }
+                closest() { return null; }
+                querySelector() { return null; }
+                removeAttribute(name) {
+                    delete this.attributes[name];
+                    if (name === "src") this.src = "";
+                }
+                click() {
+                    if (this.tagName === "a") {
+                        downloads.push({href: this.href, name: this.download});
+                    } else if (this.listeners.click) {
+                        return this.listeners.click();
+                    }
+                }
+                remove() {
+                    if (!this.parentElement) return;
+                    this.parentElement.children = this.parentElement.children.filter(
+                        (child) => child !== this
+                    );
+                    this.parentElement = null;
+                }
+            }
+            class FakeVideo extends FakeElement {
+                constructor() {
+                    super("video");
+                    this.error = null;
+                    this.currentSrc = "";
+                    this.src = "";
+                    this.readyState = 0;
+                }
+                load() {}
+            }
+
+            const downloads = [];
+            const documentListeners = {};
+            let objectUrlSequence = 0;
+            const revoked = [];
+            const createdVideos = [];
+            let fetchCalls = 0;
+            let fetchShouldFail = false;
+            global.Blob = FakeBlob;
+            global.Element = FakeElement;
+            global.HTMLVideoElement = FakeVideo;
+            global.HTMLMediaElement = {HAVE_CURRENT_DATA: 2};
+            global.URL.createObjectURL = () => (
+                `blob:https://web.whatsapp.com/fallback-${++objectUrlSequence}`
+            );
+            global.URL.revokeObjectURL = (url) => revoked.push(url);
+            global.location = {
+                href: "https://web.whatsapp.com/",
+                origin: "https://web.whatsapp.com",
+            };
+            global.fetch = async (sourceUrl, options) => {
+                fetchCalls += 1;
+                assert.match(
+                    sourceUrl,
+                    /^https:\/\/web\.whatsapp\.com\/stream\/video\?id=/,
+                );
+                assert.strictEqual(options.credentials, "include");
+                assert.strictEqual(options.cache, "no-store");
+                return {
+                    ok: !fetchShouldFail,
+                    url: sourceUrl,
+                    blob: async () => new Blob("application/octet-stream"),
+                };
+            };
+            global.document = {
+                body: new FakeElement("body"),
+                documentElement: new FakeElement("html"),
+                createElement: (tagName) => {
+                    if (tagName === "video") {
+                        const video = new FakeVideo();
+                        createdVideos.push(video);
+                        return video;
+                    }
+                    return new FakeElement(tagName);
+                },
+                addEventListener: (name, callback) => {
+                    documentListeners[name] = callback;
+                },
+            };
+            global.window = global;
+            global.window.setTimeout = (callback, delay) => {
+                if (delay === 0) callback();
+            };
+            global.getComputedStyle = () => ({position: "static"});
+            global.__ZAPZAP_VIDEO_MESSAGE__ = "Unsupported video";
+            global.__ZAPZAP_VIDEO_SAVE__ = "Save video";
+            global.__ZAPZAP_VIDEO_OPEN__ = "Open video";
+            global.__ZAPZAP_VIDEO_CLOSE__ = "Close";
+            global.__ZAPZAP_VIDEO_FETCH_ERROR__ = "Could not retrieve video";
+
+            vm.runInThisContext(fs.readFileSync(process.argv[2], "utf8"));
+
+            URL.createObjectURL(new Blob("video/mp4"));
+            assert.strictEqual(createdVideos.length, 0);
+
+            const downloadButton = new FakeElement("button");
+            downloadButton.textContent = "32 MB";
+            downloadButton.closest = (selector) => (
+                selector.includes("data-zapzap-video-fallback")
+                    ? null
+                    : downloadButton
+            );
+            documentListeners.click({target: downloadButton});
+
+            const sourceBlob = new Blob("video/mp4");
+            const sourceUrl = URL.createObjectURL(sourceBlob);
+            assert.strictEqual(createdVideos.length, 1);
+            createdVideos[0].listeners.error();
+
+            URL.revokeObjectURL(sourceUrl);
+
+            assert.strictEqual(document.body.children.length, 1);
+            const banner = document.body.children[0];
+            assert.strictEqual(banner.dataset.zapzapVideoFallback, "true");
+            assert.strictEqual(banner.attributes.role, "alert");
+            assert.strictEqual(banner.children[1].textContent, "Unsupported video");
+            const buttons = banner.children[2].children;
+            buttons[0].click();
+            buttons[1].click();
+
+            assert.strictEqual(downloads.length, 2);
+            assert.notStrictEqual(downloads[0].href, sourceUrl);
+            assert.strictEqual(downloads[0].href, downloads[1].href);
+            assert.match(downloads[0].name, /^WhatsApp-video-\d{8}-\d{6}\.mp4$/);
+            assert.match(downloads[1].name, /^zapzap-open-video-\d{8}-\d{6}\.mp4$/);
+
+            URL.createObjectURL(new Blob("video/mp4"));
+            assert.strictEqual(createdVideos.length, 1);
+
+            documentListeners.click({target: downloadButton});
+            const supportedBlob = new Blob("video/webm");
+            URL.createObjectURL(supportedBlob);
+            assert.strictEqual(createdVideos.length, 2);
+            createdVideos[1].readyState = 3;
+            createdVideos[1].listeners.canplay();
+            assert.strictEqual(document.body.children.length, 1);
+            URL.createObjectURL(new Blob("video/mp4"));
+            assert.strictEqual(createdVideos.length, 2);
+
+            const networkFailureVideo = new HTMLVideoElement();
+            networkFailureVideo.error = {code: 2};
+            networkFailureVideo.currentSrc = sourceUrl;
+            documentListeners.error({target: networkFailureVideo});
+            assert.strictEqual(document.body.children.length, 1);
+
+            const image = new FakeElement("img");
+            documentListeners.error({target: image});
+            assert.strictEqual(document.body.children.length, 1);
+
+            const wrongOriginVideo = new HTMLVideoElement();
+            wrongOriginVideo.error = {code: 4};
+            wrongOriginVideo.currentSrc = "https://example.com/stream/video";
+            documentListeners.error({target: wrongOriginVideo});
+            assert.strictEqual(document.body.children.length, 1);
+
+            const unrelatedWhatsAppVideo = new HTMLVideoElement();
+            unrelatedWhatsAppVideo.error = {code: 4};
+            unrelatedWhatsAppVideo.currentSrc = (
+                "https://web.whatsapp.com/download/document?id=unexpected"
+            );
+            documentListeners.error({target: unrelatedWhatsAppVideo});
+            assert.strictEqual(document.body.children.length, 1);
+
+            const streamVideo = new HTMLVideoElement();
+            streamVideo.error = {code: 4};
+            streamVideo.currentSrc = (
+                "https://web.whatsapp.com/stream/video?id=expected"
+            );
+            documentListeners.error({target: streamVideo});
+            documentListeners.error({target: streamVideo});
+
+            assert.strictEqual(fetchCalls, 0);
+            assert.strictEqual(document.body.children.length, 1);
+            const streamBanner = document.body.children[0];
+            assert.strictEqual(streamBanner.dataset.zapzapVideoFallback, "true");
+            assert.strictEqual(streamBanner.children[2].children.length, 1);
+
+            await streamBanner.children[2].children[0].click();
+
+            assert.strictEqual(fetchCalls, 1);
+            assert.strictEqual(document.body.children.length, 0);
+            assert.match(
+                downloads[2].name,
+                /^zapzap-open-video-\d{8}-\d{6}\.mp4$/,
+            );
+
+            const networkStreamFailure = new HTMLVideoElement();
+            networkStreamFailure.error = {code: 2};
+            networkStreamFailure.currentSrc = (
+                "https://web.whatsapp.com/stream/video?id=network-error"
+            );
+            documentListeners.error({target: networkStreamFailure});
+            assert.strictEqual(document.body.children.length, 0);
+            assert.strictEqual(fetchCalls, 1);
+
+            fetchShouldFail = true;
+            const unavailableStream = new HTMLVideoElement();
+            unavailableStream.error = {code: 4};
+            unavailableStream.currentSrc = (
+                "https://web.whatsapp.com/stream/video?id=unavailable"
+            );
+            documentListeners.error({target: unavailableStream});
+            const unavailableBanner = document.body.children[0];
+            const unavailableOpenButton = unavailableBanner.children[2].children[0];
+            await unavailableOpenButton.click();
+            assert.strictEqual(fetchCalls, 2);
+            assert.strictEqual(document.body.children.length, 1);
+            assert.strictEqual(
+                unavailableBanner.children[1].textContent,
+                "Could not retrieve video",
+            );
+            assert.strictEqual(unavailableOpenButton.disabled, false);
+            })().catch((error) => {
+                console.error(error);
+                process.exitCode = 1;
+            });
+            """
+        )
+
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            harness_path = Path(temporary_directory) / "video_fallback_test.js"
+            harness_path.write_text(harness, encoding="utf-8")
+            result = subprocess.run(
+                [node, str(harness_path), str(script_path)],
+                capture_output=True,
+                text=True,
+                timeout=15,
+            )
+
+        self.assertEqual(result.returncode, 0, result.stderr)
 
 
 class ChromiumFlagTests(unittest.TestCase):

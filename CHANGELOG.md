@@ -11,10 +11,19 @@ This mandatory record starts after version 7.4.1. The 7.4.1 entry below is the
 historical baseline; older release summaries remain available in the GitHub
 releases and the AppStream metadata.
 
-## [7.4.7] - In development
+## [7.4.7] - 2026-08-25
+
+### Added
+
+- Added persistent, account-scoped quick messages with searchable settings
+  management and a stable composer button that inserts editable text without
+  sending it automatically.
 
 ### Fixed
 
+- Kept WhatsApp's native attachment control aligned by inserting the quick
+  messages button into the composer's horizontal flex row instead of an
+  internal single-action wrapper.
 - Fixed unread-message badges not appearing in KDE Plasma by publishing the
   launcher update through Plasma's supported D-Bus protocol and retaining a
   dynamic window-icon fallback.
@@ -24,6 +33,9 @@ releases and the AppStream metadata.
   before the contact name, and exposed ZapZap's display name to desktop shells.
 - Fixed the global unread count missing from the Windows taskbar by publishing
   a native numeric overlay instead of relying only on Qt window-icon changes.
+- Added a fallback for videos that the embedded browser cannot decode, including
+  authenticated WhatsApp video streams, while keeping retrieval behind an
+  explicit action and opening the temporary file in the system video player.
 
 ## [7.4.6] - 2026-08-20
 
@@ -127,7 +139,7 @@ releases and the AppStream metadata.
 - Improved reliability when ZapZap is closed by the operating system.
 - Included performance improvements.
 
-[7.4.7]: https://github.com/matheusgodoy8/zapzap/compare/7.4.6...HEAD
+[7.4.7]: https://github.com/matheusgodoy8/zapzap/compare/7.4.6...7.4.7
 [7.4.6]: https://github.com/matheusgodoy8/zapzap/compare/7.4.5...7.4.6
 [7.4.5]: https://github.com/matheusgodoy8/zapzap/compare/7.4.4...7.4.5
 [7.4.4]: https://github.com/matheusgodoy8/zapzap/compare/7.4.2...7.4.4

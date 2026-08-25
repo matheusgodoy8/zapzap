@@ -321,6 +321,18 @@ class FakeDownload:
 
 class DownloadFallbackTests(TemporarySettingsTest):
 
+    def setUp(self):
+        super().setUp()
+        DownloadManager._active_downloads.clear()
+        DownloadManager._system_player_downloads.clear()
+        DownloadManager._opened_video_temp_dirs.clear()
+
+    def tearDown(self):
+        DownloadManager._active_downloads.clear()
+        DownloadManager._system_player_downloads.clear()
+        DownloadManager._opened_video_temp_dirs.clear()
+        super().tearDown()
+
     def test_invalid_download_path_is_repaired(self):
         SettingsManager.set("system/download_path", 42)
         with self.assertLogs(
@@ -360,6 +372,84 @@ class DownloadFallbackTests(TemporarySettingsTest):
             )
 
         download.cancel.assert_called_once_with()
+
+    def test_system_player_download_requires_our_whatsapp_video_marker(self):
+        def candidate(file_name, mime_type, url):
+            download = Mock()
+            download.downloadFileName.return_value = file_name
+            download.suggestedFileName.return_value = file_name
+            download.mimeType.return_value = mime_type
+            download.url.return_value.toString.return_value = url
+            return download
+
+        valid = candidate(
+            "zapzap-open-video-20260821-154500.mp4",
+            "video/mp4",
+            "blob:https://web.whatsapp.com/uuid",
+        )
+        wrong_origin = candidate(
+            "zapzap-open-video-20260821-154500.mp4",
+            "video/mp4",
+            "blob:https://example.com/uuid",
+        )
+        wrong_mime = candidate(
+            "zapzap-open-video-20260821-154500.mp4",
+            "application/x-msdownload",
+            "blob:https://web.whatsapp.com/uuid",
+        )
+
+        self.assertTrue(
+            DownloadManager._is_system_player_video_download(valid)
+        )
+        self.assertFalse(
+            DownloadManager._is_system_player_video_download(wrong_origin)
+        )
+        self.assertFalse(
+            DownloadManager._is_system_player_video_download(wrong_mime)
+        )
+
+    def test_completed_temporary_video_opens_in_system_player(self):
+        from PyQt6.QtWebEngineCore import QWebEngineDownloadRequest
+
+        download = Mock()
+        download.downloadFileName.return_value = (
+            "zapzap-open-video-20260821-154500.mp4"
+        )
+        download.suggestedFileName.return_value = ""
+        temporary_directory = Mock()
+        temporary_directory.isValid.return_value = True
+        temporary_directory.path.return_value = "C:/Temp/zapzap-video"
+
+        with (
+            patch(
+                "zapzap.features.downloads.download_manager.QTemporaryDir",
+                return_value=temporary_directory,
+            ),
+            patch(
+                "zapzap.features.downloads.download_manager."
+                "QDesktopServices.openUrl",
+                return_value=True,
+            ) as open_url,
+        ):
+            DownloadManager._download_for_system_player(download)
+            state_handler = download.stateChanged.connect.call_args.args[0]
+            state_handler(
+                QWebEngineDownloadRequest.DownloadState.DownloadCompleted
+            )
+
+        download.setDownloadDirectory.assert_called_once_with(
+            "C:/Temp/zapzap-video"
+        )
+        download.setDownloadFileName.assert_called_once_with(
+            "WhatsApp-video-20260821-154500.mp4"
+        )
+        download.accept.assert_called_once_with()
+        open_url.assert_called_once()
+        self.assertEqual(
+            DownloadManager._opened_video_temp_dirs,
+            [temporary_directory],
+        )
+        self.assertNotIn(download, DownloadManager._active_downloads)
 
 
 if __name__ == "__main__":

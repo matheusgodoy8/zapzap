@@ -57,6 +57,10 @@ PAGE_TYPES = (
         "AttendantSignatureSettingsController",
     ),
     (
+        "zapzap.features.settings.pages.quick_messages.controller",
+        "QuickMessagesSettingsController",
+    ),
+    (
         "zapzap.features.settings.pages.performance_experimental.controller",
         "PerformanceExperimentalSettingsController",
     ),
@@ -205,6 +209,7 @@ class SettingsLazyLoadingTest(QtTestCase):
         "Privacy and Network",
         "Advanced Customizations",
         "Attendant identification",
+        "Quick messages",
         "Performance experimental",
         "Debugging",
         "About",

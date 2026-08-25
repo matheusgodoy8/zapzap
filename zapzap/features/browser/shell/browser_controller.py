@@ -718,6 +718,11 @@ class BrowserController(BrowserView):
         if webview is not None:
             webview.apply_attendant_signature_settings()
 
+    def apply_quick_messages_settings_all_pages(self):
+        """Push changed templates to every active account runtime."""
+        for runtime in self._active_runtimes():
+            runtime.page.apply_quick_messages_settings()
+
     def current_webview(self):
         current = self.pages.currentWidget()
         if self._runtime_for_page(current):
