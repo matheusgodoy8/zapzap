@@ -3826,3 +3826,11 @@ msgstr ""
 #: zapzap/features/settings/pages/quick_messages/controller.py:86
 msgid "This action cannot be undone."
 msgstr ""
+
+#: zapzap/features/settings/pages/language_downloads/view.py:106
+msgid "Correct missing accents automatically"
+msgstr ""
+
+#: zapzap/features/settings/pages/language_downloads/view.py:107
+msgid "Correct selected Portuguese words when you type a separator."
+msgstr ""

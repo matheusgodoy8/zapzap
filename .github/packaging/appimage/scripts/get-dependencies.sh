@@ -7,8 +7,8 @@ echo "---------------------------------------------------------------"
 
 pacman -Syu --noconfirm \
     base-devel \
+    curl \
     ffmpeg \
-    git \
     kvantum \
     lxqt-qtplugin \
     pipewire-audio \
@@ -44,16 +44,17 @@ pacman -S --noconfirm \
     qt6-declarative \
     qt6-webengine
 
-echo "Downloading dictionaries..."
-git clone \
-  --depth=1 \
-  https://github.com/rafatosta/qtwebengine_dictionaries.git
-
+echo "Installing the pinned Brazilian Portuguese dictionary..."
+DICTIONARY_REVISION="cccf64a8acc951afe3f47fee023908e55699bc58"
+DICTIONARY_SHA256="6b2850f5a54994a5204a9a88d4b586e9d4e028a0360b67352b04cffdb2a3e0ea"
+DICTIONARY_URL="https://chromium.googlesource.com/chromium/deps/hunspell_dictionaries/+/${DICTIONARY_REVISION}/pt-BR-3-0.bdic?format=TEXT"
 mkdir -p zapzap/qtwebengine_dictionaries
-
-cp \
-  qtwebengine_dictionaries/*.bdic \
-  zapzap/qtwebengine_dictionaries/
+curl --fail --location --silent --show-error "${DICTIONARY_URL}" \
+  | base64 --decode > zapzap/qtwebengine_dictionaries/pt_BR.bdic.part
+echo "${DICTIONARY_SHA256}  zapzap/qtwebengine_dictionaries/pt_BR.bdic.part" \
+  | sha256sum --check --strict
+mv zapzap/qtwebengine_dictionaries/pt_BR.bdic.part \
+  zapzap/qtwebengine_dictionaries/pt_BR.bdic
 
 echo "Building ZapZap..."
 echo "---------------------------------------------------------------"

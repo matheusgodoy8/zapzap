@@ -1,5 +1,6 @@
 PyQt6
 PyQt6-WebEngine
+windows-toasts==1.3.1; platform_system == "Windows" and python_version >= "3.9"
 python-gettext
 pyinstaller
 setuptools

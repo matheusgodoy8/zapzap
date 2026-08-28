@@ -73,6 +73,7 @@ documente o que ele protege.
 | Módulo | Contrato protegido |
 |---|---|
 | `test_about_settings_ui.py` | identidade, links, detalhes técnicos, cópia, licença e créditos |
+| `test_accent_autocorrect.py` | preferência global, mapa conservador, caixa, delimitadores, filtros de token, cursor e integração Lexical entre páginas |
 | `test_account_data_removal.py` | remoção segura e idempotente de dados de perfis desativados |
 | `test_accounts_settings_ui.py` | card responsivo com ações diretas, remoção, estados/avisos e diálogo transacional sem moldura |
 | `test_appearance_settings_ui.py` | grupos, dependências, layout responsivo, persistência e acessibilidade |
@@ -97,14 +98,16 @@ documente o que ele protege.
 | `test_memory_benchmark.py` | procfs/USS, schema JSON/CSV/Markdown, isolamento WebEngine, factory stub, cenários e comparação relativa |
 | `test_network_privacy_settings_ui.py` | proxy exclusivamente global, strict proxy, credenciais, aplicar/descartar, feedback de falha do Qt, restauração e WebRTC |
 | `test_notification_account_identity.py` | identificação da conta e contato no título nativo, fallback e preferências de privacidade |
-| `test_notification_sound_setting.py` | mapeamento de som e tipos dos hints Portal/Freedesktop |
+| `test_notification_sound_setting.py` | mapeamento de som, tipos dos hints Portal/Freedesktop e mute por conta no WebEngine |
 | `test_notification_window_activation.py` | conexão QtDBus, tokens Portal/Wayland, startup X11, foco e limpeza |
+| `test_windows_notification_backend.py` | contexto individual, conta/conversa, restauração, imagem e som dos toasts WinRT |
 | `test_notifications_settings_ui.py` | rótulos, dependências, privacidade, som e lembrete de apoio |
 | `test_performance_experimental_settings_ui.py` | seção e reinício da decodificação por software |
 | `test_permissions_settings_ui.py` | grupos e ações globais/individuais de permissões |
 | `test_portal_notification_backend.py` | ciclo de vida, falhas, ações e token no backend Portal |
 | `test_qt_parameter_fallbacks.py` | escala, tema da bandeja, geometria, tipos e fail-closed do proxy global, zoom e download inválidos com autocura ou fallback restrito |
 | `test_quick_messages.py` | fallback e CRUD JSON, escopo por conta, conteúdo multilinha, payload seguro, runtime Lexical idempotente, pesquisa e acessibilidade da página |
+| `test_run_entrypoint.py` | execução local padrão e seleção explícita do runner Flatpak |
 | `test_segmented_control.py` | seleção exclusiva, sinais, mouse, teclado, acessibilidade, tamanhos, raios e temas |
 | `test_send_message_to_number.py` | normalização/URL, lista de países, validação, acessibilidade e teclado do diálogo de conversa por número |
 | `test_settings_card.py` | divisores e grupos do card compartilhado em `ui.components` |
@@ -122,6 +125,7 @@ documente o que ele protege.
 
 <!-- structure-check:tests:start -->
 - `test_about_settings_ui.py`
+- `test_accent_autocorrect.py`
 - `test_account_data_removal.py`
 - `test_accounts_settings_ui.py`
 - `test_appearance_settings_ui.py`
@@ -154,6 +158,7 @@ documente o que ele protege.
 - `test_portal_notification_backend.py`
 - `test_qt_parameter_fallbacks.py`
 - `test_quick_messages.py`
+- `test_run_entrypoint.py`
 - `test_segmented_control.py`
 - `test_send_message_to_number.py`
 - `test_settings_card.py`
@@ -166,6 +171,7 @@ documente o que ele protege.
 - `test_update_checker.py`
 - `test_whatsapp_app_lock.py`
 - `test_window_state_restore.py`
+- `test_windows_notification_backend.py`
 - `test_windows_packaging.py`
 - `test_windows_taskbar_badge.py`
 <!-- structure-check:tests:end -->
@@ -183,6 +189,24 @@ documente o que ele protege.
 6. Em backends de sistema, use fakes nas fronteiras D-Bus/Qt e mantenha pelo
    menos um roteiro manual em sessão real quando necessário.
 7. Atualize este inventário no mesmo commit.
+
+## Validação manual de notificações no Windows
+
+Instale novamente o projeto para incluir `windows-toasts`, reinicie o ZapZap e
+use contas de teste em uma sessão gráfica real.
+
+1. Receba mensagens em conversa individual e grupo, na conta atual e em outra
+   conta. Clique em cada toast e confirme janela restaurada, conta selecionada e
+   conversa exata aberta.
+2. Gere duas ou três notificações antes de clicar e abra-as fora de ordem;
+   confirme que cada uma conserva seu próprio destino.
+3. Repita com a janela normal, minimizada, oculta no tray e atrás de outro app.
+4. Confirme a imagem persistida de cada conta e a marca do ZapZap quando a foto
+   estiver desativada ou indisponível.
+5. Confirme apenas o som de mensagem do WhatsApp, sem um segundo alerta do
+   Windows. Com `Não perturbe`, o toast nativo não deve aparecer e a página da
+   conta deve ficar sem áudio; ao desativá-lo, mensagens, chamadas e mídias
+   devem recuperar o som imediatamente.
 
 ## Validação manual do proxy estrito
 
@@ -214,6 +238,52 @@ que o Chromium não cria UDP WebRTC não proxyficado. Desative separadamente o
 WebRTC Shield legado para confirmar que a política nativa não depende do script
 `webrtc_shield.js`. Repita com proxy do sistema e confirme que a UI não promete
 isolamento estrito e que a flag não é aplicada.
+
+## Validação manual do corretor ortográfico
+
+Use uma sessão gráfica real. O teste local isolado deve carregar um
+`contenteditable` com `spellcheck=true`; a validação final deve usar o composer
+real do WhatsApp Web.
+
+1. Confirme nos diagnósticos que `QTWEBENGINE_DICTIONARIES_PATH` contém
+   `pt_BR.bdic`, ative o corretor e selecione Português (Brasil).
+2. Digite `menssagem ` e confirme o sublinhado vermelho. Clique com o botão
+   direito e escolha `mensagem`; a substituição deve ser feita pelo menu nativo.
+3. Desative a autocorreção de acentos e compare `mensagem`, `voce`, `você`,
+   `informacao` e `informação`, sem esperar substituição silenciosa do corretor
+   nativo. Reative a opção e confirme `voce ` → `você ` e `informacao.` →
+   `informação.`.
+4. Repita em conversa individual, grupo, resposta, edição e legenda de mídia
+   quando o WhatsApp disponibilizar esses editores.
+5. Insira uma mensagem rápida, introduza um erro e confirme a detecção. Envie
+   uma mensagem com identificação do atendente e confirme que prefixo e
+   markdown não mudaram.
+6. Troque conversa e conta, alterne temas, reinicie o ZapZap e confirme que a
+   preferência global e `pt_BR` continuam ativos em todos os perfis.
+7. Repita no executável Windows e no AppImage publicados. Inspecione o artefato
+   para confirmar que existe somente o dicionário esperado e que seu SHA-256 é
+   o registrado na documentação de terceiros.
+
+## Validação manual da autocorreção de acentos
+
+Use o composer real do WhatsApp Web, pois um teste isolado não comprova foco,
+seleção, histórico do Lexical ou envio por Enter.
+
+1. Em Configurações > Idioma e downloads, confirme que **Corrigir acentos
+   ausentes automaticamente** é independente de **Ativar corretor
+   ortográfico**, persiste após reinício e alcança duas contas já abertas.
+2. Digite `voce `, `Voce,`, `VOCE!`, `nao?`, `informacoes;` e `situacao:`;
+   confirme caixa, acento, delimitador único e cursor imediatamente depois dele.
+3. Digite `voce` e envie com Enter; confirme que a mensagem enviada contém
+   `você`. Repita com Shift+Enter e em resposta, edição e legenda de mídia.
+4. Confirme que `esta`, `pelo`, `para`, `por`, `ate` e `numero` permanecem
+   intactos, e que `codigo` vira `código`. Confirme também URLs, e-mails,
+   caminhos, números, `snake_case`, códigos com hífen, emoji e caixa mista.
+5. Após uma correção, pressione `Ctrl+Z` e confirme um desfazer coerente sem
+   apagar o restante da mensagem. Repita com texto multilinha, markdown e emoji.
+6. Insira uma mensagem rápida e use identificação do atendente; confirme que
+   nenhuma delas é reescrita e que a palavra digitada depois continua sendo
+   corrigida normalmente.
 
 ## Validação manual do bloqueio do WhatsApp Web
 

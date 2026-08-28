@@ -61,6 +61,7 @@ class FakePage:
         self.setParent = Mock()
         self.deleteLater = Mock()
         self._page_controller = SimpleNamespace(show_toast=Mock())
+        self.apply_notification_audio_state = Mock()
 
     def page(self):
         return self._page_controller
@@ -129,6 +130,10 @@ class BrowserAccountLifecycleTest(QtTestCase):
         delete_page = BrowserController.delete_page
         close_pages = BrowserController.close_pages
         activate_account = BrowserController.activate_account
+        webview_for_user_id = BrowserController.webview_for_user_id
+        apply_notification_audio_state = (
+            BrowserController.apply_notification_audio_state
+        )
         switch_to_page = BrowserController.switch_to_page
         update_account_notifications = (
             BrowserController.update_account_notifications
@@ -280,6 +285,20 @@ class BrowserAccountLifecycleTest(QtTestCase):
         )
         self.assertFalse(self.controller.activate_account("missing"))
 
+    def test_do_not_disturb_audio_is_applied_only_to_the_target_account(self):
+        target = self._add(self._user("target", True))
+        other = self._add(self._user("other", True))
+
+        self.assertTrue(
+            self.controller.apply_notification_audio_state("target")
+        )
+
+        target.page.apply_notification_audio_state.assert_called_once_with()
+        other.page.apply_notification_audio_state.assert_not_called()
+        self.assertFalse(
+            self.controller.apply_notification_audio_state("missing")
+        )
+
     def test_switching_accounts_never_reapplies_the_global_proxy(self):
         first = self._add(self._user("first", True))
         second = self._add(self._user("second", True))
@@ -390,7 +409,7 @@ class BrowserAccountLifecycleTest(QtTestCase):
 
     def test_user_menu_shortcuts_are_contiguous_and_resolve_stable_ids(self):
         with patch.object(BrowserController, "_initialize"):
-            browser = BrowserController()
+            browser = BrowserController(webview_factory=FakeWebViewFactory())
         self.addCleanup(browser.deleteLater)
         browser.parent = SimpleNamespace(menuUsers=QMenu())
         browser.activate_account = Mock()

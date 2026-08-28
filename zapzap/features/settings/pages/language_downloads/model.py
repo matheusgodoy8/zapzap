@@ -4,6 +4,7 @@ from zapzap.features.startup.autostart_manager import AutostartManager
 from zapzap.features.dictionaries.dictionaries_manager import DictionariesManager
 from zapzap.features.downloads.download_manager import DownloadManager
 from zapzap.core.config.settings.spellcheck import SpellcheckSettings
+from zapzap.core.config.settings.accent_autocorrect import AccentAutocorrectSettings
 from zapzap.core.config.settings.system import SystemSettings
 from zapzap.core.environment.setup_manager import SetupManager
 from zapzap.core.i18n.translation_manager import TranslationManager
@@ -17,6 +18,7 @@ class LanguageDownloadSettingsModel:
 
     def __init__(self):
         self._spellcheck_settings = SpellcheckSettings()
+        self._accent_autocorrect_settings = AccentAutocorrectSettings()
         self._system_settings = SystemSettings()
 
     @property
@@ -26,6 +28,14 @@ class LanguageDownloadSettingsModel:
     @spellcheck_enabled.setter
     def spellcheck_enabled(self, value):
         self._spellcheck_settings.enabled = value
+
+    @property
+    def accent_autocorrect_enabled(self):
+        return self._accent_autocorrect_settings.enabled
+
+    @accent_autocorrect_enabled.setter
+    def accent_autocorrect_enabled(self, value):
+        self._accent_autocorrect_settings.enabled = value
 
     def get_dictionaries_path(self):
         return DictionariesManager.get_path()

@@ -4689,3 +4689,11 @@ msgstr "A mensagem “{}” será excluída."
 #: zapzap/features/settings/pages/quick_messages/controller.py:86
 msgid "This action cannot be undone."
 msgstr "Esta ação não pode ser desfeita."
+
+#: zapzap/features/settings/pages/language_downloads/view.py:106
+msgid "Correct missing accents automatically"
+msgstr "Corrigir acentos ausentes automaticamente"
+
+#: zapzap/features/settings/pages/language_downloads/view.py:107
+msgid "Correct selected Portuguese words when you type a separator."
+msgstr "Corrija palavras selecionadas em português ao digitar um separador."

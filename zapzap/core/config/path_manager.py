@@ -1,6 +1,27 @@
 from zapzap.core.environment.environment_manager import Packaging
 from zapzap.core.config.settings_manager import SettingsManager
 import os
+import sys
+
+
+def _bundled_dictionary_path() -> str:
+    """Return a packaged dictionary directory when one is available."""
+    roots = []
+    frozen_root = getattr(sys, "_MEIPASS", "")
+    if frozen_root:
+        roots.append(frozen_root)
+    roots.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
+
+    for root in roots:
+        candidate = os.path.join(root, "qtwebengine_dictionaries")
+        try:
+            if os.path.isdir(candidate) and any(
+                name.endswith(".bdic") for name in os.listdir(candidate)
+            ):
+                return candidate
+        except OSError:
+            continue
+    return ""
 
 
 class PathManager:
@@ -30,11 +51,13 @@ class PathManager:
         },
         Packaging.UNOFFICIAL: {
             "path": "",
-            "default": os.getenv("QTWEBENGINE_DICTIONARIES_PATH", os.path.join(os.path.expanduser("~"), ".local/share/zapzap/qtwebengine_dictionaries")),
+            "default": os.getenv("QTWEBENGINE_DICTIONARIES_PATH", "")
+            or _bundled_dictionary_path()
+            or os.path.join(os.path.expanduser("~"), ".local/share/zapzap/qtwebengine_dictionaries"),
         },
         Packaging.WINDOWS: {
             "path": "",
-            "default": os.path.join(
+            "default": _bundled_dictionary_path() or os.path.join(
                 os.getenv("LOCALAPPDATA", os.path.expanduser("~")),
                 "zapzap", "dictionaries"
             ),

@@ -381,6 +381,7 @@ class WebView(QWebEngineView):
         """Configura a página e carrega a URL inicial."""
         self.whatsapp_page = PageController(self.profile, parent=self)
         self.whatsapp_page.user_id = self.user.id
+        self.apply_notification_audio_state()
         self.whatsapp_page.renderProcessTerminated.connect(
             self._on_render_crash)
         self.load_page()
@@ -552,9 +553,29 @@ class WebView(QWebEngineView):
         if self.user.enable and self.whatsapp_page:
             self.whatsapp_page.apply_attendant_signature_settings()
 
+    def apply_accent_autocorrect_settings(self):
+        if self.user.enable and self.whatsapp_page:
+            self.whatsapp_page.apply_accent_autocorrect_settings()
+
     def apply_quick_messages_settings(self):
         if self.user.enable and self.whatsapp_page:
             self.whatsapp_page.apply_quick_messages_settings()
+
+    def apply_notification_audio_state(self):
+        """Mute every sound from this account while Do Not Disturb is active."""
+        if self.whatsapp_page is None:
+            return
+        notifications_enabled = SettingsManager.get(
+            f"{self.user.id}/notification",
+            True,
+        )
+        try:
+            self.whatsapp_page.setAudioMuted(not notifications_enabled)
+        except Exception:
+            logger.exception(
+                "Failed to apply notification audio state for account id=%s",
+                self.user.id,
+            )
 
     def close_conversation(self):
         """Simula o pressionamento da tecla 'Escape' na página."""

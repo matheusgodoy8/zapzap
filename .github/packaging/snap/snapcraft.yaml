@@ -55,7 +55,7 @@ parts:
     source: .
 
     build-packages:
-      - git
+      - curl
       - python3-build
       - python3-installer
       - python3-venv
@@ -85,11 +85,14 @@ parts:
 
       craftctl set version="$(project_version)"
 
-      if [ ! -d qtwebengine_dictionaries ]; then
-        git clone \
-          --depth=1 \
-          https://github.com/rafatosta/qtwebengine_dictionaries.git
-      fi
+      dictionary_revision="cccf64a8acc951afe3f47fee023908e55699bc58"
+      dictionary_sha256="6b2850f5a54994a5204a9a88d4b586e9d4e028a0360b67352b04cffdb2a3e0ea"
+      dictionary_url="https://chromium.googlesource.com/chromium/deps/hunspell_dictionaries/+/${dictionary_revision}/pt-BR-3-0.bdic?format=TEXT"
+      mkdir -p zapzap/qtwebengine_dictionaries
+      curl --fail --location --silent --show-error "${dictionary_url}" \
+        | base64 --decode > zapzap/qtwebengine_dictionaries/pt_BR.bdic
+      echo "${dictionary_sha256}  zapzap/qtwebengine_dictionaries/pt_BR.bdic" \
+        | sha256sum --check --strict
 
       export DESTDIR="$CRAFT_PART_INSTALL"
       export PREFIX=/usr

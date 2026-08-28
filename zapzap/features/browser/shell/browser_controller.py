@@ -582,6 +582,14 @@ class BrowserController(BrowserView):
         runtime = self._accounts.get(user_id)
         return runtime.page if runtime else None
 
+    def apply_notification_audio_state(self, user_id):
+        """Apply the persisted Do Not Disturb audio state to one live account."""
+        page = self.webview_for_user_id(user_id)
+        if page is None:
+            return False
+        page.apply_notification_audio_state()
+        return True
+
     def _ensure_valid_selection(self):
         current = self.pages.currentWidget()
         if any(runtime.page is current for runtime in self._active_runtimes()):
@@ -717,6 +725,11 @@ class BrowserController(BrowserView):
         webview = self.webview_for_user_id(user_id)
         if webview is not None:
             webview.apply_attendant_signature_settings()
+
+    def apply_accent_autocorrect_settings_all_pages(self):
+        """Push the changed global preference to every active account."""
+        for runtime in self._active_runtimes():
+            runtime.page.apply_accent_autocorrect_settings()
 
     def apply_quick_messages_settings_all_pages(self):
         """Push changed templates to every active account runtime."""

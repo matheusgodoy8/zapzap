@@ -145,6 +145,7 @@ class CardUserController(CardUserView):
         browser = cls._get_browser()
         if browser:
             browser.update_icons_page_button(user)
+            browser.apply_notification_audio_state(user.id)
 
     @classmethod
     def delete_user(cls, parent, user: User, on_deleted=None):
