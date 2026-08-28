@@ -11,6 +11,12 @@ This mandatory record starts after version 7.4.1. The 7.4.1 entry below is the
 historical baseline; older release summaries remain available in the GitHub
 releases and the AppStream metadata.
 
+## [7.4.9] - In development
+
+### Changed
+
+- Opened the 7.4.9 development cycle after publishing version 7.4.8.
+
 ## [7.4.8] - 2026-08-28
 
 ### Added
@@ -172,6 +178,7 @@ releases and the AppStream metadata.
 - Improved reliability when ZapZap is closed by the operating system.
 - Included performance improvements.
 
+[7.4.9]: https://github.com/matheusgodoy8/zapzap/compare/7.4.8...HEAD
 [7.4.8]: https://github.com/matheusgodoy8/zapzap/compare/7.4.7...7.4.8
 [7.4.7]: https://github.com/matheusgodoy8/zapzap/compare/7.4.6...7.4.7
 [7.4.6]: https://github.com/matheusgodoy8/zapzap/compare/7.4.5...7.4.6
