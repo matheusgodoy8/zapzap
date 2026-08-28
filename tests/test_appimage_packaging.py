@@ -72,6 +72,22 @@ class AppImagePackagingTest(unittest.TestCase):
             self.assertIn(line, script)
         self.assertLess(script.index(debloated), script.index(restore_lines[0]))
 
+    def test_build_installs_only_the_pinned_pt_br_dictionary(self):
+        script = GET_DEPENDENCIES_SCRIPT.read_text(encoding="utf-8")
+
+        self.assertIn(
+            'DICTIONARY_REVISION="cccf64a8acc951afe3f47fee023908e55699bc58"',
+            script,
+        )
+        self.assertIn(
+            'DICTIONARY_SHA256="6b2850f5a54994a5204a9a88d4b586e9d4e028a0360b67352b04cffdb2a3e0ea"',
+            script,
+        )
+        self.assertIn('pt-BR-3-0.bdic?format=TEXT', script)
+        self.assertIn('zapzap/qtwebengine_dictionaries/pt_BR.bdic', script)
+        self.assertIn('sha256sum --check --strict', script)
+        self.assertNotIn('git clone', script)
+
     def test_qt_private_abi_is_imported_before_appimage_creation(self):
         dependencies = GET_DEPENDENCIES_SCRIPT.read_text(encoding="utf-8")
         make_appimage = MAKE_APPIMAGE_SCRIPT.read_text(encoding="utf-8")

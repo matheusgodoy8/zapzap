@@ -17,6 +17,8 @@ As integrações D-Bus usam `PyQt6.QtDBus`, já fornecido pelo PyQt6. Não insta
 
 Execute o aplicativo da raiz com `python run.py` ou `python -m zapzap`. Não use
 dados reais para testes destrutivos de conta, cache ou configurações.
+Use `python run.py --flatpak` somente quando quiser instalar os runtimes,
+construir e iniciar deliberadamente o ambiente Flatpak.
 
 ## Antes de alterar
 
@@ -232,6 +234,37 @@ dados reais para testes destrutivos de conta, cache ou configurações.
   `Aplicar` persiste e chama `browser.update_spellcheck()`.
 - Não volte a criar submenus ou uma `QAction` por dicionário. Valide listas
   grandes, pesquisa por código/rótulo, ausência de dicionários e perfis ativos.
+- Preserve o menu do navegador como extensão de
+  `createStandardContextMenu()`: sugestões e substituição pertencem ao Qt e não
+  devem ser reimplementadas por JavaScript ou alteração de `innerHTML`.
+- O dicionário padrão dos builds oficiais é o `pt-BR-3-0.bdic` do catálogo
+  oficial do Chromium, instalado como `pt_BR.bdic`. Mantenha revisão e SHA-256
+  fixos e sincronizados entre Windows, AppImage, Snap, testes e o README de
+  terceiros; nunca aceite a resposta de rede sem verificar o digest.
+- Ao atualizar o dicionário, revise primeiro `README_pt_BR.txt`, `LICENSE` e o
+  source correspondente na revisão upstream. Repita a POC gráfica com palavra
+  incorreta, sugestão e substituição; `offscreen` não prova o sublinhado nem o
+  menu do compositor real.
+- Trate `system/accentAutocorrect` e o runtime local de acentos como uma
+  funcionalidade independente do corretor nativo. Desativar uma opção não pode
+  alterar a outra, e a preferência global deve ser reaplicada a todas as contas
+  ativas sem recarregar as páginas.
+- Mantenha o mapa conservador centralizado em
+  `features.browser.web.accent_autocorrect`, sem palavras portuguesas válidas e
+  ambíguas. Aplique caixa baixa, inicial maiúscula e caixa alta genericamente;
+  caixa mista deve permanecer intacta.
+- No runtime, parta somente do editor Lexical originado pelo delimitador,
+  selecione a palavra imediatamente anterior e use
+  `CONTROLLED_TEXT_INSERTION_COMMAND`. Não altere `innerHTML`/`textContent`,
+  não varra mensagens, não instale observer/polling e não corrija URLs, e-mails,
+  caminhos, números, identificadores, emoji ou tokens com caracteres especiais.
+- Aplique o `Range` pelo `RangeSelection.applyDOMRange()` dentro de um
+  `editor.update()` discreto e confirme que o intervalo Lexical cobre exatamente
+  a palavra antes do comando controlado. Se isso falhar, não insira a correção.
+- Injete a autocorreção antes da identificação do atendente para que a última
+  palavra seja corrigida antes do Enter de envio. Valide em sessão gráfica real
+  cursor, `Ctrl+Z`, markdown, emoji, assinatura, mensagens rápidas, edição,
+  resposta, legenda e múltiplas contas; `offscreen` não prova esses contratos.
 
 ### Mudança em notificação ou ativação
 
@@ -247,6 +280,14 @@ dados reais para testes destrutivos de conta, cache ou configurações.
   ocultar contato e mensagem, mas deve manter a identificação da conta.
 - Teste pelo menos o backend alterado, duas contas com nomes distintos e as
   preferências de privacidade/som.
+- No Windows, preserve um toast e um callback por mensagem. O contexto deve
+  reter o ID persistido da conta e o `QWebEngineNotification` original; não
+  tente inferir a conversa por título, texto ou posição visível. Valide também
+  a restauração de janela minimizada/oculta, a imagem da conta, o fallback da
+  marca e a ausência de um segundo som além daquele reproduzido pelo WhatsApp.
+- Trate `Não perturbe` como estado por conta: além de impedir o backend nativo,
+  aplique o mute à `QWebEnginePage` ativa e restaure o áudio sem recarregar a
+  sessão quando a preferência for reativada. Teste mensagens, chamadas e mídias.
 
 ### Mudança visual compartilhada
 

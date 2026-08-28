@@ -8,6 +8,11 @@ $ErrorActionPreference = "Stop"
 Write-Host "# === Windows Builder ==="
 
 $AppName = "ZapZap"
+$DictionaryRevision = "cccf64a8acc951afe3f47fee023908e55699bc58"
+$DictionarySha256 = "6b2850f5a54994a5204a9a88d4b586e9d4e028a0360b67352b04cffdb2a3e0ea"
+$DictionaryUrl = "https://chromium.googlesource.com/chromium/deps/hunspell_dictionaries/+/$DictionaryRevision/pt-BR-3-0.bdic?format=TEXT"
+$DictionaryDirectory = "zapzap/qtwebengine_dictionaries"
+$DictionaryPath = "$DictionaryDirectory/pt_BR.bdic"
 
 if ([string]::IsNullOrWhiteSpace($Architecture)) {
     if ($env:PROCESSOR_ARCHITECTURE -eq "ARM64") {
@@ -37,7 +42,8 @@ $UiFiles = @()
 $AdditionalData = @(
     @("zapzap/po", "zapzap/po"),
     @("zapzap/assets", "zapzap/assets"),
-    @("zapzap/features/browser/web/scripts", "zapzap/features/browser/web/scripts")
+    @("zapzap/features/browser/web/scripts", "zapzap/features/browser/web/scripts"),
+    @($DictionaryDirectory, "qtwebengine_dictionaries")
 )
 
 $ApplicationIcon = "share/icons/com.rtosta.zapzap.ico"
@@ -50,6 +56,24 @@ Write-Host "# === Instalando dependências ==="
 python -m pip install --upgrade pip
 python -m pip install pyinstaller
 python -m pip install -r requirements.txt
+
+Write-Host "# === Preparando dicionário pt-BR ==="
+New-Item -ItemType Directory -Force -Path $DictionaryDirectory | Out-Null
+$DictionaryBase64 = "$DictionaryPath.base64"
+try {
+    Invoke-WebRequest -UseBasicParsing -Uri $DictionaryUrl -OutFile $DictionaryBase64
+    $EncodedDictionary = [IO.File]::ReadAllText($DictionaryBase64).Trim()
+    [IO.File]::WriteAllBytes(
+        $DictionaryPath,
+        [Convert]::FromBase64String($EncodedDictionary)
+    )
+} finally {
+    Remove-Item -LiteralPath $DictionaryBase64 -Force -ErrorAction SilentlyContinue
+}
+$ActualDictionarySha256 = (Get-FileHash -Algorithm SHA256 $DictionaryPath).Hash.ToLowerInvariant()
+if ($ActualDictionarySha256 -ne $DictionarySha256) {
+    throw "SHA-256 inválido para o dicionário pt-BR: $ActualDictionarySha256"
+}
 
 if ($UiFiles.Count -gt 0) {
     Write-Host "# === Compilando arquivos .ui ==="
@@ -89,7 +113,8 @@ $Args = @(
     "--windowed",
     "--noconfirm",
     "--icon", $ApplicationIcon,
-    "--collect-submodules", "zapzap.features.settings.pages"
+    "--collect-submodules", "zapzap.features.settings.pages",
+    "--collect-submodules", "windows_toasts"
 )
 
 foreach ($item in $AdditionalData) {

@@ -24,6 +24,18 @@ README = REPOSITORY_ROOT / "README.md"
 
 
 class WindowsPackagingTest(unittest.TestCase):
+    def test_native_toast_dependency_and_modules_are_packaged(self):
+        requirements = (REPOSITORY_ROOT / "requirements.txt").read_text(
+            encoding="utf-8"
+        )
+        build = WINDOWS_BUILD_SCRIPT.read_text(encoding="utf-8")
+
+        self.assertIn("windows-toasts==1.3.1", requirements)
+        self.assertIn(
+            '"--collect-submodules", "windows_toasts"',
+            build,
+        )
+
     def test_workflow_builds_native_x86_64_and_arm64_artifacts(self):
         workflow = WINDOWS_WORKFLOW.read_text(encoding="utf-8")
 
@@ -72,6 +84,25 @@ class WindowsPackagingTest(unittest.TestCase):
         self.assertIn('"--icon", $ApplicationIcon', script)
         self.assertEqual(icon_data[:4], b"\x00\x00\x01\x00")
         self.assertGreaterEqual(int.from_bytes(icon_data[4:6], "little"), 6)
+
+    def test_build_installs_the_pinned_pt_br_dictionary(self):
+        script = WINDOWS_BUILD_SCRIPT.read_text(encoding="utf-8")
+
+        self.assertIn(
+            'cccf64a8acc951afe3f47fee023908e55699bc58',
+            script,
+        )
+        self.assertIn(
+            '6b2850f5a54994a5204a9a88d4b586e9d4e028a0360b67352b04cffdb2a3e0ea',
+            script,
+        )
+        self.assertIn('pt-BR-3-0.bdic?format=TEXT', script)
+        self.assertIn('$DictionaryPath = "$DictionaryDirectory/pt_BR.bdic"', script)
+        self.assertIn(
+            '@($DictionaryDirectory, "qtwebengine_dictionaries")',
+            script,
+        )
+        self.assertIn('Get-FileHash -Algorithm SHA256', script)
 
     def test_windows_identity_is_set_before_qapplication_creation(self):
         source = APPLICATION_SOURCE.read_text(encoding="utf-8")

@@ -102,5 +102,10 @@ class LanguageDownloadSettingsView(SettingsPage):
             self.spellchecker_groupBox,
             (self.spell_languages_row, path_row),
         )
+        self.accent_autocorrect_row = SettingsSwitchRow(
+            _("Correct missing accents automatically"),
+            _("Correct selected Portuguese words when you type a separator."),
+        )
+        card.add_row(self.accent_autocorrect_row)
         section.add_card(card)
         self.add_section(section)

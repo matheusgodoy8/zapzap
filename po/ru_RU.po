@@ -4132,3 +4132,11 @@ msgstr ""
 #: zapzap/features/settings/pages/attendant_signature/view.py:35
 msgid "Choose which ZapZap account to configure."
 msgstr ""
+
+#: zapzap/features/settings/pages/language_downloads/view.py:106
+msgid "Correct missing accents automatically"
+msgstr ""
+
+#: zapzap/features/settings/pages/language_downloads/view.py:107
+msgid "Correct selected Portuguese words when you type a separator."
+msgstr ""

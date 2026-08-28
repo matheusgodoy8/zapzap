@@ -11,6 +11,39 @@ This mandatory record starts after version 7.4.1. The 7.4.1 entry below is the
 historical baseline; older release summaries remain available in the GitHub
 releases and the AppStream metadata.
 
+## [7.4.8] - 2026-08-28
+
+### Added
+
+- Added optional local automatic accent correction for 20 conservative
+  Portuguese forms in WhatsApp Lexical editors, triggered only by separators.
+- Added a pinned, locally executed Brazilian Portuguese dictionary to official
+  Windows, AppImage and Snap builds so Qt WebEngine's native spell checker can
+  underline misspellings and offer replacement suggestions in WhatsApp fields.
+
+### Changed
+
+- Kept automatic accent correction independent from Qt WebEngine's native
+  spell checker and synchronized preference changes across active accounts.
+- Made packaged spell-check dictionaries discoverable in frozen Windows and
+  Python installations while preserving existing custom dictionary paths.
+- Replaced shared Windows tray balloons with native per-message toasts that
+  use the saved account image and remain silent so they do not duplicate the
+  incoming-message sound already played by WhatsApp Web.
+- Updated distribution metadata for the stable 7.4.8 release.
+
+### Fixed
+
+- Applied the selected previous word inside a synchronous Lexical update before
+  controlled accent replacement, preventing append-only or skipped correction.
+- Restored and focused ZapZap before routing a clicked Windows notification to
+  its originating account and exact WhatsApp conversation, without losing the
+  context of other notifications that arrive concurrently.
+- Restored `python run.py` as the local checkout launcher on Windows and other
+  hosts, keeping Flatpak setup behind an explicit `--flatpak` option.
+- Muted the originating WhatsApp Web page while an account is in Do Not
+  Disturb mode and restored its audio immediately when notifications return.
+
 ## [7.4.7] - 2026-08-25
 
 ### Added
@@ -139,6 +172,7 @@ releases and the AppStream metadata.
 - Improved reliability when ZapZap is closed by the operating system.
 - Included performance improvements.
 
+[7.4.8]: https://github.com/matheusgodoy8/zapzap/compare/7.4.7...7.4.8
 [7.4.7]: https://github.com/matheusgodoy8/zapzap/compare/7.4.6...7.4.7
 [7.4.6]: https://github.com/matheusgodoy8/zapzap/compare/7.4.5...7.4.6
 [7.4.5]: https://github.com/matheusgodoy8/zapzap/compare/7.4.4...7.4.5

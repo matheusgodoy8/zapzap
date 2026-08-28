@@ -1,7 +1,7 @@
 """Tests for muting the desktop alert sound for new messages."""
 
 import unittest
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from PyQt6.QtCore import QMetaType, QVariant
 
@@ -12,6 +12,8 @@ from zapzap.features.notifications.freedesktop_notification_backend import (
 from zapzap.features.notifications.portal_notification_backend import (
     PortalNotificationBackend,
 )
+from zapzap.features.browser.web.web_view import WebView
+from zapzap.features.accounts.card_user_controller import CardUserController
 
 
 def _with_sound(enabled, module):
@@ -87,6 +89,80 @@ class PortalSoundFieldTests(unittest.TestCase):
 
         self.assertEqual(fields["category"], "im.received")
         self.assertEqual(fields["display-hint"], ["show-as-new"])
+
+
+class AccountDoNotDisturbAudioTests(unittest.TestCase):
+    @staticmethod
+    def _webview():
+        return type("FakeWebView", (), {
+            "user": type("FakeUser", (), {"id": "account-2"})(),
+            "whatsapp_page": MagicMock(),
+        })()
+
+    def test_do_not_disturb_mutes_whatsapp_page_audio(self):
+        webview = self._webview()
+        with patch(
+            "zapzap.features.browser.web.web_view.SettingsManager.get",
+            return_value=False,
+        ):
+            WebView.apply_notification_audio_state(webview)
+
+        webview.whatsapp_page.setAudioMuted.assert_called_once_with(True)
+
+    def test_reenabling_notifications_restores_whatsapp_page_audio(self):
+        webview = self._webview()
+        with patch(
+            "zapzap.features.browser.web.web_view.SettingsManager.get",
+            return_value=True,
+        ):
+            WebView.apply_notification_audio_state(webview)
+
+        webview.whatsapp_page.setAudioMuted.assert_called_once_with(False)
+
+    def test_new_web_page_applies_persisted_audio_state_before_loading(self):
+        webview = type("FakeWebView", (), {
+            "profile": object(),
+            "user": type("FakeUser", (), {"id": "account-2"})(),
+            "whatsapp_page": None,
+            "_on_render_crash": MagicMock(),
+            "load_page": MagicMock(),
+            "_inject_web_theme_controller": MagicMock(),
+            "apply_notification_audio_state": MagicMock(),
+        })()
+        page = MagicMock()
+
+        with patch(
+            "zapzap.features.browser.web.web_view.PageController",
+            return_value=page,
+        ):
+            WebView._setup_page(webview)
+
+        webview.apply_notification_audio_state.assert_called_once_with()
+        webview.load_page.assert_called_once_with()
+
+    def test_account_toggle_applies_audio_state_immediately(self):
+        user = type("FakeUser", (), {"id": "account-2"})()
+        model = MagicMock()
+        browser = MagicMock()
+
+        with (
+            patch(
+                "zapzap.features.accounts.card_user_controller.CardUserModel",
+                return_value=model,
+            ),
+            patch.object(
+                CardUserController,
+                "_get_browser",
+                return_value=browser,
+            ),
+        ):
+            CardUserController.set_user_notifications(user, False)
+
+        self.assertFalse(model.notifications_enabled)
+        browser.update_icons_page_button.assert_called_once_with(user)
+        browser.apply_notification_audio_state.assert_called_once_with(
+            "account-2"
+        )
 
 
 if __name__ == "__main__":

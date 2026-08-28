@@ -19,6 +19,10 @@ from zapzap.features.browser.web.attendant_signature import (
     build_configuration_script,
     build_initialization_script,
 )
+from zapzap.features.browser.web.accent_autocorrect import (
+    build_configuration_script as build_accent_autocorrect_configuration_script,
+    build_initialization_script as build_accent_autocorrect_initialization_script,
+)
 from zapzap.features.browser.web.quick_messages import (
     build_configuration_script as build_quick_messages_configuration_script,
     build_initialization_script as build_quick_messages_initialization_script,
@@ -291,6 +295,9 @@ class PageController(QWebEnginePage):
     def _on_load_finished(self, success):
         """Ações realizadas após o carregamento da página."""
         if success:
+            # Install this listener before the signature runtime so a final
+            # word is corrected before WhatsApp handles Enter as send.
+            self.initialize_accent_autocorrect()
             self.initialize_attendant_signature()
             self.initialize_quick_messages()
 
@@ -318,6 +325,14 @@ class PageController(QWebEnginePage):
                 debug=logger.isEnabledFor(logging.DEBUG),
             )
         )
+
+    def initialize_accent_autocorrect(self):
+        """Install the global local-only automatic accent correction runtime."""
+        self.runJavaScript(build_accent_autocorrect_initialization_script())
+
+    def apply_accent_autocorrect_settings(self):
+        """Apply the global preference without reloading WhatsApp Web."""
+        self.runJavaScript(build_accent_autocorrect_configuration_script())
 
     def apply_attendant_signature_settings(self):
         """Apply changed local preferences without reloading WhatsApp Web."""

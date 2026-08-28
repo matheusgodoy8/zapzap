@@ -1,6 +1,9 @@
 """Regression tests for dictionary discovery and presentation."""
 
 from types import SimpleNamespace
+import os
+from pathlib import Path
+import tempfile
 import unittest
 from unittest.mock import Mock, patch
 
@@ -15,9 +18,24 @@ from zapzap.features.dictionaries.dictionaries_manager import (
 from zapzap.features.settings.pages.language_downloads.controller import (
     LanguageDownloadSettingsController,
 )
+from zapzap.core.config.path_manager import _bundled_dictionary_path
 
 
 class DictionaryOptionsTests(unittest.TestCase):
+
+    def test_frozen_runtime_discovers_a_packaged_dictionary(self):
+        with tempfile.TemporaryDirectory(prefix="zapzap-bundled-dictionary-") as root:
+            dictionary_dir = Path(root) / "qtwebengine_dictionaries"
+            dictionary_dir.mkdir()
+            (dictionary_dir / "pt_BR.bdic").write_bytes(b"compiled dictionary")
+
+            with patch("sys._MEIPASS", root, create=True):
+                discovered = _bundled_dictionary_path()
+
+        self.assertEqual(
+            os.path.normpath(discovered),
+            os.path.normpath(str(dictionary_dir)),
+        )
 
     def test_type_annotations_do_not_resolve_list_as_the_manager_method(self):
         self.assertEqual(
@@ -66,6 +84,7 @@ class FakeLanguageDownloadSettingsModel:
 
     def __init__(self):
         self.spellcheck_enabled = True
+        self.accent_autocorrect_enabled = True
         self.saved_dictionary = None
         self.current_dictionary = "pt_BR"
         self.selected_dictionaries = ["pt_BR"]
@@ -137,6 +156,7 @@ class DictionarySettingsUiTests(QtTestCase):
             "Portuguese (Brazil)",
         )
         self.assertEqual(page.btn_select_spell_languages.text(), "Select…")
+        self.assertTrue(page.accent_autocorrect_row.checkbox.isChecked())
 
     def test_settings_summary_updates_after_selection_changes(self):
         model = FakeLanguageDownloadSettingsModel()

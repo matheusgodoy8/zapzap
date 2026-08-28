@@ -263,6 +263,23 @@ A chave legada não é apagada e continua sincronizada com o primeiro idioma,
 preservando downgrade e `get_current_dict()`. Idiomas recentes ficam, como lista
 ordenada, em `system/recentSpellCheckLanguages`.
 
+O corretor usa exclusivamente o mecanismo Hunspell local do Qt WebEngine. Cada
+`WebView` aplica `setSpellCheckEnabled()` e `setSpellCheckLanguages()` ao perfil
+isolado da conta; `BrowserController.update_spellcheck()` reaplica a preferência
+global a todos os perfis ativos. O menu customizado parte de
+`createStandardContextMenu()`, portanto conserva as sugestões e a substituição
+nativas do Chromium antes de acrescentar as ações globais do ZapZap.
+
+Os builds oficiais de Windows, AppImage e Snap instalam `pt_BR.bdic`, obtido de
+uma revisão fixa do catálogo `chromium/deps/hunspell_dictionaries` e aceito
+somente após verificação SHA-256. O arquivo é renomeado do basename upstream
+`pt-BR-3-0` para o ID persistido `pt_BR`; o conteúdo não é alterado. Windows e
+instalações Python descobrem primeiro o diretório empacotado, enquanto caminhos
+personalizados já persistidos continuam tendo precedência. AppImage e Snap
+publicam seu diretório interno por `QTWEBENGINE_DICTIONARIES_PATH` antes da
+criação do WebEngine. A origem, revisão, hash e avisos ficam junto ao recurso em
+`zapzap/qtwebengine_dictionaries/README.md`.
+
 Não renomeie chaves persistidas sem migração. Algumas propriedades positivas
 invertem chaves legadas negativas, por exemplo `keep_running_in_background`
 versus `system/quit_in_close` e `donation_message_enabled` versus
@@ -344,6 +361,22 @@ Antes da inserção ele solicita ao runtime nativo de
 identificação que prepare o composer, preservando a regra de assinatura sem
 duplicá-la.
 
+A autocorreção local de acentos é uma camada separada do corretor nativo. A
+preferência global `system/accentAutocorrect`, habilitada por padrão, é exposta
+por `AccentAutocorrectSettings` e enviada a todas as contas ativas. O mapa
+centralizado contém somente formas portuguesas conservadoras e pode receber
+camadas personalizadas no futuro sem mudar a integração com o editor. O runtime
+`web/scripts/accent_autocorrect.js` escuta apenas delimitadores digitados no
+editor Lexical que originou o evento, seleciona a palavra ASCII imediatamente
+anterior e aplica esse intervalo ao `RangeSelection` dentro de um
+`editor.update()` síncrono. No mesmo estado transacional, a substituição usa
+`CONTROLLED_TEXT_INSERTION_COMMAND` e só prossegue quando o intervalo interno
+corresponde à palavra selecionada. Ele não varre a
+mensagem, não observa o DOM, não altera `innerHTML`/`textContent` e rejeita
+tokens de URL, e-mail, caminho, número, identificador, emoji ou caixa mista.
+Como a substituição passa pelo Lexical antes do delimitador original, cursor,
+estado React e histórico de desfazer permanecem sob controle do WhatsApp.
+
 Ao criar uma página:
 
 1. crie o pacote `pages/<nome>/` com `model`, `view`, `controller` e
@@ -363,7 +396,7 @@ seleciona um backend:
 |---|---|
 | Flatpak/Linux | XDG Desktop Portal |
 | Linux fora do Flatpak | `org.freedesktop.Notifications` |
-| Windows | backend Windows |
+| Windows | toast WinRT individual, com fallback para o tray Qt |
 | macOS | backend macOS |
 
 O título de conteúdo começa pelo nome da conta persistido em `User.name` e,
@@ -373,6 +406,19 @@ Assim, duas contas permanecem distinguíveis em todos os backends sem trocar o
 baseado na posição visual apenas para apresentação. O nome de exibição do
 aplicativo e o tooltip do tray são definidos como ZapZap; shells podem continuar
 mostrando sua identidade técnica em uma área controlada pelo sistema.
+
+No Windows, cada toast mantém uma referência própria ao `WebView`, ao ID
+persistido da conta e ao `QWebEngineNotification` original. O clique restaura e
+ativa a janela, seleciona a conta pelo ID e devolve o evento ao Chromium com
+`QWebEngineNotification.click()`; o WhatsApp conserva internamente o vínculo
+exato da conversa, sem depender de nomes ou de JIDs extraídos do DOM. A imagem
+persistida da conta é renderizada em cache local, com a marca do ZapZap como
+fallback. O toast Windows é sempre silencioso porque o WhatsApp Web já reproduz
+o áudio de mensagem. O modo `Não perturbe` por conta bloqueia o toast nativo e
+aplica `QWebEnginePage.setAudioMuted(True)` à página correspondente; ao reativar
+notificações, o áudio é restaurado imediatamente. Como o mute é nativo da página,
+ele também alcança chamadas e mídias daquela conta. Os backends Portal e
+Freedesktop mantêm seus IDs e callbacks D-Bus independentes.
 
 As integrações D-Bus usam exclusivamente `PyQt6.QtDBus`: o backend Portal e o
 backend Freedesktop compartilham o event loop do Qt e não dependem de

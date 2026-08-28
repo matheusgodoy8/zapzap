@@ -88,6 +88,16 @@
   <content_rating type="oars-1.1" />
 
   <releases>
+    <release version="7.4.8" date="2026-08-28">
+      <description>
+        <p>
+          Version 7.4.8 adds automatic Portuguese accent correction and a bundled
+          Brazilian Portuguese spell-check dictionary. It also improves Windows
+          notifications with account photos, exact conversation activation, and
+          per-account Do Not Disturb audio muting.
+        </p>
+      </description>
+    </release>
     <release version="7.4.2" date="2026-08-14">
       <description>
         <p>

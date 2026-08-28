@@ -24,6 +24,9 @@ class LanguageDownloadSettingsController(LanguageDownloadSettingsView):
         self.spellchecker_groupBox.checkbox.setChecked(
             self.model.spellcheck_enabled
         )
+        self.accent_autocorrect_row.checkbox.setChecked(
+            self.model.accent_autocorrect_enabled
+        )
 
         self._update_spellcheck_language_summary()
         self.spellchecker_options_group.setEnabled(
@@ -37,6 +40,9 @@ class LanguageDownloadSettingsController(LanguageDownloadSettingsView):
     def _connect_signals(self):
         self.spellchecker_groupBox.checkbox.toggled.connect(
             self._handle_toggled_spellcheck
+        )
+        self.accent_autocorrect_row.checkbox.toggled.connect(
+            self._handle_toggled_accent_autocorrect
         )
         self.interface_language_comboBox.currentIndexChanged.connect(
             self._handle_interface_language
@@ -129,6 +135,11 @@ class LanguageDownloadSettingsController(LanguageDownloadSettingsView):
         setattr(self.model, "spellcheck_enabled", toggled)
         self.spellchecker_options_group.setEnabled(toggled)
         self._update_browser_spellcheck()
+
+    def _handle_toggled_accent_autocorrect(self, toggled):
+        self.model.accent_autocorrect_enabled = toggled
+        browser = QApplication.instance().getWindow().browser
+        browser.apply_accent_autocorrect_settings_all_pages()
 
     def _update_spellcheck_language_summary(self):
         options = {
